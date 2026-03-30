@@ -1,0 +1,2 @@
+\babel@toc {russian}{}\relax 
+\contentsline {section}{\numberline {A}Пример секции аппендикса}{3}{appendix.A}%
