@@ -1,0 +1,20 @@
+# LaTeX build artifacts
+*.aux
+*.bcf
+*.blg
+*.bbl
+*.log
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.out
+*.toc
+*.run.xml
+*.lof
+*.lot
+
+# PDF только из final_report (остальные .pdf — это исходники)
+final_report/*.pdf
+
+# VS Code workspace
+.vscode/
