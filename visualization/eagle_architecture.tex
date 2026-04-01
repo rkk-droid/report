@@ -1,0 +1,255 @@
+% EAGLE Architecture Visualization
+% Compile with: pdflatex eagle_architecture.tex
+\documentclass[tikz, border=14pt]{standalone}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usetikzlibrary{
+    arrows.meta,
+    positioning,
+    fit,
+    backgrounds,
+    calc,
+    shapes.geometric
+}
+
+% ── Colors ────────────────────────────────────────────────────────────────────
+\definecolor{nodeblue}{RGB}{31,119,180}
+\definecolor{nodeorange}{RGB}{214,95,14}
+\definecolor{taCyan}{RGB}{0,158,167}
+\definecolor{taCyanLight}{RGB}{214,247,250}
+\definecolor{saGreen}{RGB}{82,158,50}
+\definecolor{saGreenLight}{RGB}{220,245,210}
+\definecolor{hybridGold}{RGB}{210,170,0}
+\definecolor{hybridLight}{RGB}{255,248,204}
+\definecolor{outRed}{RGB}{180,20,20}
+\definecolor{outLight}{RGB}{255,220,220}
+\definecolor{wOrange}{RGB}{200,80,0}
+\definecolor{gray70}{RGB}{89,89,89}
+
+% ── Styles ────────────────────────────────────────────────────────────────────
+\tikzset{
+  innode/.style={draw, circle, minimum size=1.3cm, line width=1.5pt,
+                 font=\large\bfseries},
+  sblk/.style={draw, rounded corners=3pt,
+               minimum width=2.8cm, minimum height=1.0cm,
+               line width=0.9pt, align=center, font=\scriptsize},
+  mblk/.style={draw, rounded corners=4pt,
+               minimum width=4.2cm, minimum height=1.1cm,
+               line width=1pt, align=center, font=\scriptsize},
+  hblk/.style={draw, rounded corners=5pt,
+               minimum width=7.0cm, minimum height=2.4cm,
+               line width=1.3pt, align=center, font=\small},
+  oblk/.style={draw, rounded corners=4pt,
+               minimum width=3.2cm, minimum height=1.1cm,
+               line width=1.2pt, align=center, font=\small},
+  sc/.style={draw, circle, minimum size=1.15cm,
+             line width=1.4pt, font=\small\bfseries},
+  modbox/.style={draw, dashed, rounded corners=7pt,
+                 line width=1.1pt, inner sep=9pt},
+  arr/.style={-{Stealth[length=7pt,width=5pt]},
+              line width=1.2pt, color=gray70},
+  tarr/.style={-{Stealth[length=7pt,width=5pt]},
+               line width=1.3pt, color=taCyan},
+  sarr/.style={-{Stealth[length=7pt,width=5pt]},
+               line width=1.3pt, color=saGreen},
+  darr/.style={-{Stealth[length=6pt,width=4pt]},
+               line width=1.0pt, dashed, color=wOrange},
+  la/.style={font=\scriptsize, color=gray70},
+}
+
+% ─────────────────────────────────────────────────────────────────────────────
+%  COORDINATE PLAN  (all values in cm, TikZ default 1 unit = 1 cm)
+%
+%   v  at (  0,  0)          u  at (22,  0)
+%
+%   Time-aware row  y = +5.5
+%     rv  (3.5, 5.5)   hv_ta (7.5, 5.5)   ta_mlp (11, 5.5)
+%                      hu_ta (14.5,5.5)    ru    (18.5,5.5)
+%     s_ta circle at (11, 3.5)
+%
+%   Structure-aware row  y = -5.5
+%     pv  (3.5,-5.5)   piv   (7.5,-5.5)   sa_dot(11,-5.5)
+%                      piu  (14.5,-5.5)    pu   (18.5,-5.5)
+%     s_sa circle at (11,-3.5)
+%
+%   hybrid at (11, 0)   [width 7cm → east=14.5, west=7.5]
+%   output at (11, -7.5) [below everything]
+% ─────────────────────────────────────────────────────────────────────────────
+
+\begin{document}
+\begin{tikzpicture}
+
+% ── Input nodes ───────────────────────────────────────────────────────────────
+\node[innode, fill=nodeblue!25, draw=nodeblue] (v) at (0,0) {$v$};
+\node[below=0.1cm of v, font=\scriptsize, color=nodeblue!80!black]
+    {$\mathbf{x}_v(t)$};
+
+\node[innode, fill=nodeorange!25, draw=nodeorange] (u) at (22,0) {$u$};
+\node[below=0.1cm of u, font=\scriptsize, color=nodeorange!80!black]
+    {$\mathbf{x}_u(t)$};
+
+% ── Time-aware module ─────────────────────────────────────────────────────────
+\node[sblk, fill=taCyanLight, draw=taCyan] (rv) at (3.5, 5.5)
+    {Recent Nbrs\\$N_v(t,k_r)$\\{\tiny feat: $\mathbf{x}_{v_i}, \mathbf{e}_{v,v_i}$}};
+
+\node[sblk, fill=taCyanLight!80, draw=taCyan] (hv_ta) at (7.5, 5.5)
+    {Avg.~concat\\$\mathbf{h}_v^{\mathrm{ta}}(t)$};
+
+\node[mblk, fill=taCyanLight!60, draw=taCyan] (ta_mlp) at (11, 5.5)
+    {2-layer MLP $+\;\sigma$\\
+     {\tiny $\mathbf{W}_1[\mathbf{h}_v^{\mathrm{ta}},\mathbf{h}_u^{\mathrm{ta}}]
+       \!\to\!\mathrm{ReLU}\!\to\!\mathbf{W}_2\!\to\!\sigma$}};
+
+\node[sblk, fill=taCyanLight!80, draw=taCyan] (hu_ta) at (14.5, 5.5)
+    {Avg.~concat\\$\mathbf{h}_u^{\mathrm{ta}}(t)$};
+
+\node[sblk, fill=taCyanLight, draw=taCyan] (ru) at (18.5, 5.5)
+    {Recent Nbrs\\$N_u(t,k_r)$\\{\tiny feat: $\mathbf{x}_{u_i}, \mathbf{e}_{u,u_i}$}};
+
+\node[sc, fill=taCyan!35, draw=taCyan!80!black] (s_ta) at (11, 3.5)
+    {$s_{v,u}^{\mathrm{ta}}$};
+
+% Module bounding box (time-aware)
+\begin{scope}[on background layer]
+\node[modbox, fill=taCyan!6, draw=taCyan!70!black,
+      fit=(rv)(ru)(hv_ta)(hu_ta)(ta_mlp)(s_ta),
+      label={[font=\small\bfseries, color=taCyan!80!black, yshift=2pt]above:%
+             Time-aware Module}] (ta_mod) {};
+\end{scope}
+
+% ── Structure-aware module ────────────────────────────────────────────────────
+\node[sblk, fill=saGreenLight, draw=saGreen] (pv) at (3.5, -5.5)
+    {Top-$k_s$ T-PPR\\$N_v(\bm{\pi}_v,k_s)$\\{\tiny temporal PPR}};
+
+\node[sblk, fill=saGreenLight!80, draw=saGreen] (piv) at (7.5, -5.5)
+    {T-PPR vector\\$\bm{\pi}_v(t)$};
+
+\node[mblk, fill=saGreenLight!60, draw=saGreen] (sa_dot) at (11, -5.5)
+    {Intersection $\cap$ + dot-product\\
+     {\tiny $\displaystyle\sum_{v_i\in N_v\cap N_u}
+       \bm{\pi}_v[v_i]\cdot\bm{\pi}_u[v_i]$}\\
+     {\tiny (no trainable parameters)}};
+
+\node[sblk, fill=saGreenLight!80, draw=saGreen] (piu) at (14.5, -5.5)
+    {T-PPR vector\\$\bm{\pi}_u(t)$};
+
+\node[sblk, fill=saGreenLight, draw=saGreen] (pu) at (18.5, -5.5)
+    {Top-$k_s$ T-PPR\\$N_u(\bm{\pi}_u,k_s)$\\{\tiny temporal PPR}};
+
+\node[sc, fill=saGreen!35, draw=saGreen!80!black] (s_sa) at (11, -3.5)
+    {$s_{v,u}^{\mathrm{sa}}$};
+
+% Module bounding box (structure-aware)
+\begin{scope}[on background layer]
+\node[modbox, fill=saGreen!6, draw=saGreen!70!black,
+      fit=(pv)(pu)(piv)(piu)(sa_dot)(s_sa),
+      label={[font=\small\bfseries, color=saGreen!80!black, yshift=-2pt]below:%
+             Structure-aware Module \normalfont(T-PPR, no training)}]
+    (sa_mod) {};
+\end{scope}
+
+% ── Hybrid module ─────────────────────────────────────────────────────────────
+\node[hblk, fill=hybridLight, draw=hybridGold] (hybrid) at (11, 0)
+    {\textbf{Adaptive Hybrid Fusion}\\[4pt]
+     $s_{v,u}^{\mathrm{hy}}(t)=
+       \lambda\!\cdot\!\bigl(e^{-\bar{t}_v}+e^{-\bar{t}_u}\bigr)
+       \cdot s_{v,u}^{\mathrm{ta}}(t)+s_{v,u}^{\mathrm{sa}}(t)$\\[3pt]
+     {\scriptsize $\bar{t}_v$ — avg.\ time gap of $k_r$ recent neighbors of $v$}};
+
+% ── Output (строго под hybrid, ниже всего diagram) ───────────────────────────
+\node[oblk, fill=outLight, draw=outRed] (output) at (11, -9.2)
+    {\textbf{Link Score}\\$\hat{y}_{v,u}(t)$};
+
+% ── T-PPR update note (нижний левый угол, вне всех модулей) ──────────────────
+\node[draw, rounded corners=4pt, fill=gray!8, line width=0.8pt,
+      text width=5.2cm, align=center, font=\scriptsize]
+    (tppr_note) at (3.5, -8.8)
+    {T-PPR update:\\
+     $\pi_v^{l+1}(t)=\alpha\mathbf{P}(t)\pi_v^l(t)+(1-\alpha)\mathbf{r}_v(t)$};
+
+% ═════════════════════════════════════════════════════════════════════════════
+%  ARROWS
+% ═════════════════════════════════════════════════════════════════════════════
+
+% ── v / u  →  Recent neighbors ───────────────────────────────────────────────
+\draw[tarr] (v.north) to[out=80, in=210]
+    node[la, pos=0.55, above left]{select $k_r$} (rv.south west);
+\draw[tarr] (u.north) to[out=100, in=-30]
+    node[la, pos=0.55, above right]{select $k_r$} (ru.south east);
+
+% ── Recent neighbors  →  Avg concat ──────────────────────────────────────────
+\draw[arr] (rv.east)    -- node[la, above]{avg concat} (hv_ta.west);
+\draw[arr] (ru.west)    -- node[la, above]{avg concat} (hu_ta.east);
+
+% ── Avg concat  →  MLP ───────────────────────────────────────────────────────
+\draw[arr] (hv_ta.east) -- (ta_mlp.west);
+\draw[arr] (hu_ta.west) -- (ta_mlp.east);
+
+% ── MLP  →  s_ta ─────────────────────────────────────────────────────────────
+\draw[tarr] (ta_mlp.south) -- (s_ta.north);
+
+% ── s_ta  →  Hybrid ──────────────────────────────────────────────────────────
+\draw[tarr] (s_ta.south)
+    -- node[la, right, pos=0.5]{$s_{v,u}^{\mathrm{ta}}$}
+    (hybrid.north);
+
+% ── v / u  →  T-PPR nodes ────────────────────────────────────────────────────
+\draw[sarr] (v.south) to[out=-80, in=150]
+    node[la, pos=0.55, below left]{T-PPR $k_s$} (pv.north west);
+\draw[sarr] (u.south) to[out=-100, in=30]
+    node[la, pos=0.55, below right]{T-PPR $k_s$} (pu.north east);
+
+% ── T-PPR nodes  →  pi vectors ───────────────────────────────────────────────
+\draw[arr] (pv.east)    -- node[la, below]{scores} (piv.west);
+\draw[arr] (pu.west)    -- node[la, below]{scores} (piu.east);
+
+% ── pi vectors  →  dot-product ───────────────────────────────────────────────
+\draw[arr] (piv.east)   -- (sa_dot.west);
+\draw[arr] (piu.west)   -- (sa_dot.east);
+
+% ── dot-product  →  s_sa ─────────────────────────────────────────────────────
+\draw[sarr] (sa_dot.north) -- (s_sa.south);
+
+% ── s_sa  →  Hybrid ──────────────────────────────────────────────────────────
+\draw[sarr] (s_sa.north)
+    -- node[la, right, pos=0.5]{$s_{v,u}^{\mathrm{sa}}$}
+    (hybrid.south);
+
+% ── Adaptive weight arrows (v / u  →  Hybrid, dashed orange) ─────────────────
+% v → hybrid.west:  goes straight at y=0, below time-aware module
+\draw[darr] (v.east)
+    to[out=0, in=180]
+    node[la, below, pos=0.5]{$\bar{t}_v=\tfrac{1}{k_r}\sum\Delta\tau$}
+    (hybrid.west);
+
+% u → hybrid.east:  mirrors, goes below structure-aware path
+\draw[darr] (u.west)
+    to[out=180, in=0]
+    node[la, below, pos=0.5]{$\bar{t}_u$}
+    (hybrid.east);
+
+% ── Hybrid  →  Output (прямая вертикальная стрелка) ─────────────────────────
+\draw[-{Stealth[length=9pt,width=6pt]}, line width=2pt, color=outRed]
+    (hybrid.south) -- (output.north);
+
+% ═════════════════════════════════════════════════════════════════════════════
+%  LEGEND
+% ═════════════════════════════════════════════════════════════════════════════
+\node[draw, rounded corners=4pt, fill=white, inner sep=7pt,
+      font=\scriptsize, anchor=south east]
+    at (22, -6.5)
+{%
+    \begin{tikzpicture}[font=\scriptsize]
+        \draw[tarr]  (0,1.1)--(0.8,1.1);
+        \node[right] at (0.85,1.1){Time-aware path};
+        \draw[sarr]  (0,0.65)--(0.8,0.65);
+        \node[right] at (0.85,0.65){Structure-aware path};
+        \draw[darr]  (0,0.2)--(0.8,0.2);
+        \node[right] at (0.85,0.2){Adaptive weight ($\bar{t}$)};
+    \end{tikzpicture}%
+};
+
+\end{tikzpicture}
+\end{document}

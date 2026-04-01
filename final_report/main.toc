@@ -1,2 +1,26 @@
 \babel@toc {russian}{}\relax 
-\contentsline {section}{\numberline {A}Пример секции аппендикса}{3}{appendix.A}%
+\contentsline {section}{Аннотация}{3}{section*.2}%
+\contentsline {section}{Список ключевых слов}{3}{section*.3}%
+\contentsline {section}{Введение}{3}{section*.4}%
+\contentsline {section}{Обзор литературы}{3}{section*.5}%
+\contentsline {subsection}{Обзор библиотек}{3}{section*.5}%
+\contentsline {subsection}{Обзор работ про биткоин}{3}{section*.5}%
+\contentsline {subsection}{Обзор моделей для прогнозирования}{3}{section*.5}%
+\contentsline {section}{\numberline {1}Задача}{3}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Постановка задачи}{3}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Датасет}{3}{subsection.1.2}%
+\contentsline {subsection}{\numberline {1.3}Семлирование негативных рёбер}{3}{subsection.1.3}%
+\contentsline {section}{\numberline {2}Модели}{3}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Базовые решения}{3}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}EAGLE}{3}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}GraphMixer}{5}{subsection.2.3}%
+\contentsline {subsubsection}{\numberline {2.3.1}Архитектура модели GraphMixer}{5}{subsubsection.2.3.1}%
+\contentsline {subsection}{\numberline {2.4}GLFormer}{7}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}DyGFormer}{7}{subsection.2.5}%
+\contentsline {subsection}{\numberline {2.6}HyperEvent}{7}{subsection.2.6}%
+\contentsline {section}{\numberline {3}Эксперименты}{7}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Результаты экспериментов}{7}{subsection.3.1}%
+\contentsline {section}{\numberline {4}Фреймворк}{7}{section.4}%
+\contentsline {section}{\numberline {5}CUDA}{7}{section.5}%
+\contentsline {section}{\numberline {A}Пример секции аппендикса}{8}{appendix.A}%
+\contentsline {section}{\numberline {B}Описание применения генеративных моделей}{8}{appendix.B}%
