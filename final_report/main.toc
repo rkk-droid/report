@@ -1,26 +1,28 @@
 \babel@toc {russian}{}\relax 
-\contentsline {section}{Аннотация}{3}{section*.2}%
-\contentsline {section}{Список ключевых слов}{3}{section*.3}%
-\contentsline {section}{Введение}{3}{section*.4}%
-\contentsline {section}{Обзор литературы}{3}{section*.5}%
-\contentsline {subsection}{Обзор библиотек}{3}{section*.5}%
-\contentsline {subsection}{Обзор работ про биткоин}{3}{section*.5}%
-\contentsline {subsection}{Обзор моделей для прогнозирования}{3}{section*.5}%
-\contentsline {section}{\numberline {1}Задача}{3}{section.1}%
-\contentsline {subsection}{\numberline {1.1}Постановка задачи}{3}{subsection.1.1}%
-\contentsline {subsection}{\numberline {1.2}Датасет}{3}{subsection.1.2}%
-\contentsline {subsection}{\numberline {1.3}Семлирование негативных рёбер}{3}{subsection.1.3}%
-\contentsline {section}{\numberline {2}Модели}{3}{section.2}%
-\contentsline {subsection}{\numberline {2.1}Базовые решения}{3}{subsection.2.1}%
-\contentsline {subsection}{\numberline {2.2}EAGLE}{3}{subsection.2.2}%
-\contentsline {subsection}{\numberline {2.3}GraphMixer}{5}{subsection.2.3}%
-\contentsline {subsubsection}{\numberline {2.3.1}Архитектура модели GraphMixer}{5}{subsubsection.2.3.1}%
-\contentsline {subsection}{\numberline {2.4}GLFormer}{7}{subsection.2.4}%
-\contentsline {subsection}{\numberline {2.5}DyGFormer}{7}{subsection.2.5}%
-\contentsline {subsection}{\numberline {2.6}HyperEvent}{7}{subsection.2.6}%
-\contentsline {section}{\numberline {3}Эксперименты}{7}{section.3}%
-\contentsline {subsection}{\numberline {3.1}Результаты экспериментов}{7}{subsection.3.1}%
-\contentsline {section}{\numberline {4}Фреймворк}{7}{section.4}%
-\contentsline {section}{\numberline {5}CUDA}{7}{section.5}%
-\contentsline {section}{\numberline {A}Пример секции аппендикса}{8}{appendix.A}%
-\contentsline {section}{\numberline {B}Описание применения генеративных моделей}{8}{appendix.B}%
+\contentsline {section}{Аннотация}{4}{section*.2}%
+\contentsline {section}{Список ключевых слов}{4}{section*.3}%
+\contentsline {section}{Введение}{4}{section*.4}%
+\contentsline {section}{Обзор литературы}{4}{section*.5}%
+\contentsline {subsection}{Обзор библиотек}{4}{section*.5}%
+\contentsline {subsection}{Обзор работ про биткоин}{4}{section*.5}%
+\contentsline {subsection}{Обзор моделей для прогнозирования}{4}{section*.5}%
+\contentsline {section}{\numberline {1}Задача}{4}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Датасет}{4}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Постановка задачи}{4}{subsection.1.2}%
+\contentsline {subsection}{\numberline {1.3}Семплирование негативных рёбер}{5}{subsection.1.3}%
+\contentsline {subsection}{\numberline {1.4}Стратегия формирования кандидатов}{6}{subsection.1.4}%
+\contentsline {subsection}{\numberline {1.5}Метрики качества}{6}{subsection.1.5}%
+\contentsline {subsection}{\numberline {1.6}Признаки}{7}{subsection.1.6}%
+\contentsline {section}{\numberline {2}Модели}{9}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Базовые решения}{9}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}EAGLE}{9}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}GraphMixer}{11}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}GLFormer}{12}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}DyGFormer}{14}{subsection.2.5}%
+\contentsline {section}{\numberline {3}Эксперименты}{15}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Результаты экспериментов}{15}{subsection.3.1}%
+\contentsline {section}{\numberline {4}Фреймворк}{16}{section.4}%
+\contentsline {section}{\numberline {5}CUDA}{16}{section.5}%
+\contentsline {section}{Список литературы}{17}{section*.7}%
+\contentsline {section}{\numberline {A}Пример секции аппендикса}{18}{appendix.A}%
+\contentsline {section}{\numberline {B}Описание применения генеративных моделей}{18}{appendix.B}%
