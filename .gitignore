@@ -1,20 +1,25 @@
 # LaTeX build artifacts
 *.aux
+*.auxlock
+*.bbl
 *.bcf
 *.blg
-*.bbl
-*.log
 *.fdb_latexmk
 *.fls
-*.synctex.gz
+*.log
 *.out
 *.toc
-*.run.xml
 *.lof
 *.lot
+*.run.xml
+*.synctex*
+*.nav
+*.snm
+*.vrb
 
-# PDF только из final_report (остальные .pdf — это исходники)
+# PDF только из final_report (остальные .pdf — это входные материалы)
 final_report/*.pdf
 
-# VS Code workspace
+# VS Code
 .vscode/
+*.code-workspace
