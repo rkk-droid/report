@@ -1,0 +1,140 @@
+meta:
+  source_dir: cnmlp
+  metric_source: "Для сравнения брать метрики только из summary.json -> test"
+  required_metrics:
+    - mrr
+    - hits@1
+    - hits@10
+
+feature_glossary:
+  cn_uu: "Common Neighbors по неориентированному графу"
+  log1p_cn_uu: "log1p(cn_uu)"
+  aa_uu: "Adamic-Adar по неориентированному графу"
+  cn_dir: "Directed Common Neighbors"
+  aa_dir: "Directed Adamic-Adar"
+  jaccard_uu: "Jaccard по неориентированному графу"
+  log1p_pa_uu: "log1p(preferential attachment)"
+
+experiments:
+  - id: E1
+    title: "Baseline на одном признаке CN"
+    essence: "Минимальный baseline: PairMLP обучается только на одном структурном признаке cn_uu."
+    features:
+      - cn_uu
+    test_metrics:
+      mrr: 0.6025841621474499
+      hits@1: 0.52202
+      hits@10: 0.76694
+
+  - id: E2
+    title: "Добавление log-CN и Adamic-Adar"
+    essence: "К baseline добавлены два близких топологических признака: log1p_cn_uu и aa_uu."
+    features:
+      - cn_uu
+      - log1p_cn_uu
+      - aa_uu
+    test_metrics:
+      mrr: 0.5721477897673944
+      hits@1: 0.48714
+      hits@10: 0.74072
+
+  - id: E3
+    title: "Полный набор handcrafted фич с BPR"
+    essence: "Модель получает полный набор из 7 topological features, включая directed и degree-based признаки; loss = BPR."
+    features:
+      - cn_uu
+      - log1p_cn_uu
+      - aa_uu
+      - cn_dir
+      - aa_dir
+      - jaccard_uu
+      - log1p_pa_uu
+    test_metrics:
+      mrr: 0.307507216987566
+      hits@1: 0.23008
+      hits@10: 0.44308
+
+  - id: E4
+    title: "Полный набор handcrafted фич с BCE"
+    essence: "Повтор эксперимента с полным набором из 7 признаков, но вместо BPR используется BCE loss."
+    features:
+      - cn_uu
+      - log1p_cn_uu
+      - aa_uu
+      - cn_dir
+      - aa_dir
+      - jaccard_uu
+      - log1p_pa_uu
+    test_metrics:
+      mrr: 0.3261055952217873
+      hits@1: 0.25444
+      hits@10: 0.4559
+
+  - id: E5
+    title: "CN-only с cosine scheduler"
+    essence: "Возврат к одному признаку cn_uu, но с cosine scheduler и явно отключенными node features."
+    features:
+      - cn_uu
+    test_metrics:
+      mrr: 0.6060937990498092
+      hits@1: 0.52494
+      hits@10: 0.77214
+
+  - id: E6_lr4
+    title: "CN-only с уменьшенным learning rate"
+    essence: "Тот же single-feature baseline на cn_uu, но с меньшим learning rate и более коротким режимом обучения."
+    features:
+      - cn_uu
+    test_metrics:
+      mrr: 0.6163616120692681
+      hits@1: 0.53258
+      hits@10: 0.78812
+
+  - id: E7_e2
+    title: "Триплет фич E2 в коротком режиме обучения"
+    essence: "Повтор набора из E2: cn_uu, log1p_cn_uu и aa_uu, но с более коротким обучением и ранней остановкой."
+    features:
+      - cn_uu
+      - log1p_cn_uu
+      - aa_uu
+    test_metrics:
+      mrr: 0.5775068998468684
+      hits@1: 0.49138
+      hits@10: 0.74798
+
+  - id: E8_all
+    title: "Полный набор фич в более коротком режиме"
+    essence: "Полный набор из 7 признаков без dropout, с уменьшенным learning rate и коротким training schedule."
+    features:
+      - cn_uu
+      - log1p_cn_uu
+      - aa_uu
+      - cn_dir
+      - aa_dir
+      - jaccard_uu
+      - log1p_pa_uu
+    test_metrics:
+      mrr: 0.33000379448015854
+      hits@1: 0.24788
+      hits@10: 0.47828
+
+  - id: E9_big
+    title: "Увеличенная MLP на одном признаке CN"
+    essence: "Проверка, помогает ли более широкая и глубокая MLP, если на вход подается только cn_uu."
+    features:
+      - cn_uu
+    test_metrics:
+      mrr: 0.5964830632950799
+      hits@1: 0.51758
+      hits@10: 0.75758
+
+ranking_by_test_mrr:
+  - E6_lr4
+  - E5
+  - E1
+  - E9_big
+  - E7_e2
+  - E2
+  - E8_all
+  - E4
+  - E3
