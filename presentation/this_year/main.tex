@@ -1,0 +1,686 @@
+%!TEX TS-program = xelatex
+
+\documentclass[aspectratio=169]{beamer}
+
+\newbool{russian}
+\booltrue{russian}
+
+% Подключаем стиль презентации HSE:
+\usepackage{../last_year/HSE-theme/beamerthemeHSE}
+
+% Работа с русским языком и шрифтами
+\usepackage[english,russian]{babel}
+\usepackage[no-math]{fontspec}
+\setsansfont{HSESans-Regular}[
+    Path = ../last_year/HSE_Sans/,
+    BoldFont = HSESans-Bold.otf,
+    ItalicFont = HSESans-Italic.otf
+]
+\setmonofont{Courier New}
+\usepackage{mathspec}
+\setmathsfont(Digits,Latin,Greek)[
+  Path = ../last_year/HSE_Sans/,
+  Numbers = {Lining,Proportional}
+]{HSESans-Regular}
+\setmathrm[Path = ../last_year/HSE_Sans/,Numbers={Lining,Proportional}]{HSESans-Regular}
+
+\uselanguage{russian}
+\languagepath{russian}
+\deftranslation[to=russian]{Theorem}{Теорема}
+\deftranslation[to=russian]{Definition}{Определение}
+\deftranslation[to=russian]{Definitions}{Определения}
+\deftranslation[to=russian]{Corollary}{Следствие}
+\deftranslation[to=russian]{Fact}{Факт}
+\deftranslation[to=russian]{Example}{Пример}
+\deftranslation[to=russian]{Examples}{Примеры}
+
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{colortbl}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Информация о выступлении
+
+\title[Прогнозирование платёжных графов]{%
+  \fontsize{11}{13}\selectfont Прогнозирование динамики графа платежей\\
+  \fontsize{11}{13}\selectfont на основе открытых платёжных данных\\[0.2cm]
+  \fontsize{9}{11}\selectfont Payment Graph Dynamics Forecasting\\
+  \fontsize{9}{11}\selectfont Based on Open Payment Data
+}
+
+\subtitle{\fontsize{9}{11}\selectfont Командный программный проект}
+
+\author[Кречетов, Романюков, Шеин]{%
+  \fontsize{8}{10}\selectfont
+  3 курс ОП «Прикладная математика и информатика»\\
+  \textbf{Кречетов Роман Константинович} (\#БПМИ233),
+  \textbf{Романюков Егор Сергеевич} (\#БПМИ233),
+  \textbf{Шеин Илья Антонович} (\#БПМИ2310)\\[0.2cm]
+  Руководитель проекта:\\
+  \textbf{Филатов Дмитрий Станиславович},
+  Исполнительный директор по исследованию данных, ПАО «Сбербанк»
+}
+
+\institute[НИУ ВШЭ]{%
+  Национальный исследовательский университет\\
+  «Высшая школа экономики»
+}
+
+\date{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+% Слайд 1: Титульный
+\frame[plain]{\titlepage}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Слайд 2: Описание предметной области
+\section{Описание предметной области}
+\begin{frame}
+  \frametitle{Описание предметной области}
+  \begin{itemize}
+    \item \textbf{Транзакционные графы} — естественное представление платёжных систем
+      \begin{itemize}
+        \item Узлы — участники системы: пользователи, организации, кошельки
+        \item Рёбра — финансовые взаимодействия между ними с временными метками
+      \end{itemize}
+    \item \textbf{Bitcoin} — первая и наиболее популярная криптовалюта
+      \begin{itemize}
+        \item Все транзакции публично доступны с 2009 года
+        \item Граф содержит сотни миллионов узлов и миллиарды рёбер
+        \item Сильно разреженный, степени распределены по степенному закону
+      \end{itemize}
+    \item \textbf{Задача предсказания связей} (link prediction) — один из ключевых инструментов анализа подобных сетей
+      \begin{itemize}
+        \item Выявление мошеннических операций
+        \item Прогнозирование транзакционной активности
+        \item Анализ рыночных трендов и стратегическое планирование
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+% Слайд 3: Актуальность работы
+\section{Актуальность работы}
+\begin{frame}
+  \frametitle{Актуальность работы}
+  \begin{itemize}
+    \item \textbf{Масштаб данных}: реальные финансовые сети превосходят стандартные бенчмарки на \textbf{1–4 порядка} по числу узлов и рёбер
+    \item \textbf{Пробел в литературе}: большинство работ по temporal GNN тестируются на небольших социальных или биологических сетях; на крупных финансовых данных современные архитектуры проверялись значительно реже
+    \item \textbf{Неизученный вопрос}: насколько эффективны простые структурные эвристики по сравнению с нейросетевыми моделями на реальных крупномасштабных финансовых данных?
+    \item \textbf{Отсутствие воспроизводимого конвейера}: существующие библиотеки либо ориентированы на оффлайн-бенчмарки, либо не поддерживают форматы платёжных данных
+  \end{itemize}
+\end{frame}
+
+% Слайд 4: Цель и задачи
+\section{Цель и задачи}
+\begin{frame}
+  \frametitle{Цель и задачи}
+  \textbf{Цель}
+  \begin{itemize}
+    \item Систематически сравнить методы предсказания временных связей в крупномасштабном транзакционном графе Bitcoin и разработать воспроизводимую платформу для экспериментов
+  \end{itemize}
+  \vspace{0.3cm}
+  \textbf{Задачи}
+  \begin{enumerate}
+    \item Выбрать задачу и датасет; провести обзор существующих подходов и библиотек
+    \item Разработать единый экспериментальный протокол (метрики, семплирование, признаки)
+    \item Реализовать и сравнить $>$10 методов: структурные эвристики, ML-модели, Temporal GNN
+    \item Провести аблационное исследование модели CN+MLP
+    \item Разработать библиотеку \texttt{payment-graph-forecasting} с единым API
+    \item Реализовать CUDA-модуль для ускорения вычислительно затратных примитивов
+  \end{enumerate}
+\end{frame}
+
+% Слайд 5: Постановка задачи
+\section{Постановка задачи}
+\begin{frame}
+  \frametitle{Постановка задачи: Temporal Link Prediction}
+  \begin{columns}
+    \column{0.55\textwidth}
+    \textbf{Формальная постановка}
+    \begin{itemize}
+      \item Динамический граф $\mathcal{G} = (\mathcal{V}, \mathcal{E})$ — поток событий (stream graph)
+      \item Каждое ребро $(s, d, t) \in \mathcal{E}$ — перевод от кошелька $s$ к $d$ в момент $t$
+      \item Задача: по истории $\mathcal{G}_{<t}$ оценить вероятность $P(s, d, t \mid \mathcal{G}_{<t})$
+    \end{itemize}
+    \vspace{0.3cm}
+    \textbf{Разбиение данных (temporal split)}
+    \begin{itemize}
+      \item Обучение: первые \textbf{70\%} рёбер
+      \item Валидация: следующие \textbf{15\%}
+      \item Тест: последние \textbf{15\%}
+    \end{itemize}
+    \column{0.42\textwidth}
+    \textbf{Метрики качества}\\[0.2cm]
+    \textbf{MRR} (Mean Reciprocal Rank):
+    $$\text{MRR} = \frac{1}{|\mathcal{E}_\text{eval}|} \sum_{i=1}^{|\mathcal{E}_\text{eval}|} \frac{1}{r_i}$$
+    \textbf{H@K} (Hits@K):
+    $$\text{H@K} = \frac{1}{|\mathcal{E}_\text{eval}|} \sum_{i} \mathbf{1}[r_i \le K]$$
+    \vspace{0.1cm}
+    {\small При $N_\text{neg}=1$: MRR $\in \{0.5, 1.0\}$,\\интерпретируется как доля правильно ранжированных пар}
+  \end{columns}
+\end{frame}
+
+% Слайд 6: Датасет
+\section{Датасет}
+\begin{frame}
+  \frametitle{Датасет: ORBITAAL (Bitcoin, 2020)}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \textbf{ORBITAAL} — полный временной граф биткоин-транзакций (2009–2021)
+    \begin{itemize}
+      \item Используем 10\% рёбер периода \textbf{2020-06-01 — 2020-08-31}
+      \item Соответствует $\approx$6.1M транзакций за 10 дней
+    \end{itemize}
+    \vspace{0.2cm}
+    \begin{table}
+    \small
+    \begin{tabular}{lr}
+      \toprule
+      Характеристика & Значение \\
+      \midrule
+      Узлы $|\mathcal{V}|$ & 2\,638\,557 \\
+      Рёбра $|\mathcal{E}|$ & 6\,143\,581 \\
+      Уникальные пары & 5\,314\,320 \\
+      Повторные взаимодействия & 829\,261 \\
+      Плотность (directed) & $7.6 \times 10^{-7}$ \\
+      Суммарный объём & \$45.4 млрд \\
+      \bottomrule
+    \end{tabular}
+    \end{table}
+    \column{0.47\textwidth}
+    \textbf{Сравнение с классическими датасетами}
+    \begin{table}
+    \tiny
+    \begin{tabular}{lrrl}
+      \toprule
+      Датасет & $|\mathcal{V}|$ & $|\mathcal{E}|$ & Период \\
+      \midrule
+      Contacts & 692 & 2.4M & 30 дн. \\
+      LastFM & 1\,980 & 1.3M & 30 дн. \\
+      Wikipedia & 9\,227 & 157K & 30 дн. \\
+      Reddit & 10\,984 & 672K & 30 дн. \\
+      AskUbuntu & 159K & 964K & 2613 дн. \\
+      SuperUser & 194K & 1.4M & 2773 дн. \\
+      \midrule
+      \textbf{ORBITAAL (наш)} & \textbf{2.6M} & \textbf{6.1M} & \textbf{10 дн.} \\
+      \bottomrule
+    \end{tabular}
+    \end{table}
+    \vspace{0.2cm}
+    {\small Наш датасет превосходит ближайший аналог (SuperUser) в \textbf{13.6 раза} по числу узлов}
+  \end{columns}
+\end{frame}
+
+% Слайд 7: Анализ существующих библиотек
+\section{Анализ существующих решений}
+\begin{frame}
+  \frametitle{Анализ существующих библиотек}
+  \begin{itemize}
+    \item \textbf{PyTorch Geometric Temporal} — ориентирован на дискретные временные снимки; ограниченная поддержка темпоральности «из коробки»
+    \item \textbf{PyG (базовый)} — низкоуровневые примитивы \texttt{TemporalData}; пользователь собирает пайплайн самостоятельно
+    \item \textbf{DGL} — мощный фреймворк общего назначения; без специализированной поддержки непрерывного времени
+    \item \textbf{TGL (Amazon)} и \textbf{STM-Graph} — промышленные решения для сверхкрупных графов; плохо обобщаются за пределы своей ниши
+    \item \textbf{DyGLib} — наиболее близкий ориентир: честный воспроизводимый бенчмарк для stream graph, охватывает несколько temporal методов
+      \begin{itemize}
+        \item Ограничения: CPU-only семплирование, привязка к фиксированному формату CSV/NPY, сложно расширять
+      \end{itemize}
+  \end{itemize}
+  \vspace{0.2cm}
+  \textbf{Вывод:} ни одна из существующих библиотек не является расширяемой платформой с поддержкой платёжных данных и GPU-ускорением семплирования
+\end{frame}
+
+% Слайд 8: Функциональные требования
+\section{Функциональные требования}
+\begin{frame}
+  \frametitle{Функциональные требования}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \textbf{Требования к исследовательской части}
+    \begin{itemize}
+      \item Воспроизводимый протокол сравнения: единое разбиение, одинаковые метрики, одинаковое семплирование
+      \item Поддержка $>$10 методов из четырёх классов
+      \item Корректное построение признаков без утечки данных
+      \item Три стратегии семплирования негативных рёбер (RND, HIST, IND)
+    \end{itemize}
+    \column{0.48\textwidth}
+    \textbf{Требования к библиотеке}
+    \begin{itemize}
+      \item Единый библиотечный API (\texttt{payment\_graph\_forecasting.*})
+      \item Декларативный запуск через YAML-конфигурации
+      \item Поддержка формата stream graph (parquet)
+      \item Взаимозаменяемые backend'ы: Python / C++ / CUDA
+      \item Автоматическое тестирование (47 тестовых файлов)
+      \item Документация и примеры запуска
+    \end{itemize}
+  \end{columns}
+\end{frame}
+
+% Слайд 9: Анализ методов — структурные и ML
+\section{Анализ существующих методов}
+\begin{frame}
+  \frametitle{Методы предсказания связей: обзор}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \textbf{Структурные эвристики}
+    \begin{itemize}
+      \item \textbf{Common Neighbors (CN)}: $|\mathcal{N}(s) \cap \mathcal{N}(d)|$
+      \item \textbf{Adamic–Adar (AA)}: взвешивает общих соседей обратно логарифму их степени
+      \item \textbf{Jaccard}: нормирует CN на объединение окружений
+      \item \textbf{Preferential Attachment (PA)}: $|\mathcal{N}(s)| \cdot |\mathcal{N}(d)|$
+    \end{itemize}
+    \vspace{0.2cm}
+    \textbf{Классические ML-модели}
+    \begin{itemize}
+      \item \textbf{Logistic Regression} — линейная граница
+      \item \textbf{Random Forest} — ансамбль деревьев
+      \item \textbf{CatBoost} — градиентный бустинг
+      \item \textbf{CN+MLP} — CN-признак + признаки узлов, двухслойный перцептрон
+    \end{itemize}
+    \column{0.47\textwidth}
+    \textbf{Temporal GNN-архитектуры}
+    \begin{itemize}
+      \item \textbf{EAGLE}: time-aware + structure-aware модули с T-PPR; линейная сложность
+      \item \textbf{GraphMixer}: только MLP + mean-pooling, без механизма внимания
+      \item \textbf{GLFormer}: адаптивная агрегация токенов с расширяющимся рецептивным полем; $O(N\sum K_l)$
+      \item \textbf{DyGFormer}: трансформер над историческими последовательностями первых соседей; NCoE-кодирование
+    \end{itemize}
+  \end{columns}
+\end{frame}
+
+% Слайд 10: Выбор методов
+\begin{frame}
+  \frametitle{Обоснование выбора методов}
+  \begin{itemize}
+    \item \textbf{Структурные эвристики} (CN, AA, Jaccard, PA): образуют сильный нижний порог; на реальных датасетах неожиданно конкурентоспособны с GNN \textit{[Poursafaei et al., 2022]}
+    \item \textbf{Классические ML} (LogReg, RF, CatBoost, CN+MLP): проверяют линейную разделимость признаков и сочетание структурного сигнала с атрибутивной информацией
+    \item \textbf{Глубокие модели}: выбраны 4 архитектуры, покрывающие широкий спектр:
+      \begin{itemize}
+        \item По вычислительной сложности: от почти линейных (EAGLE, GraphMixer) до квадратичных (DyGFormer)
+        \item По способу учёта времени: адаптивные веса (EAGLE, GLFormer) vs. явный патчинг (DyGFormer, GraphMixer)
+        \item По архитектуре: лёгкие агрегирующие (EAGLE, GraphMixer) vs. Transformer-подобные (GLFormer, DyGFormer)
+      \end{itemize}
+    \item Такой набор позволяет получить \textbf{более полную картину} без смещения в пользу одного класса методов
+  \end{itemize}
+\end{frame}
+
+% Слайд 11: Признаки
+\section{Особенности реализации}
+\begin{frame}
+  \frametitle{Признаковое описание узлов}
+  \begin{columns}
+    \column{0.55\textwidth}
+    Каждый узел $v$ характеризуется \textbf{15 признаками}, вычисленными исключительно на обучающей выборке (без утечки данных):
+    \begin{itemize}
+      \item \textbf{Степенные}: $\log\,\text{in\_degree}$, $\log\,\text{out\_degree}$, \text{in\_out\_ratio}
+      \item \textbf{Уникальные контрагенты}: $\log\,\text{unique\_in\_cp}$, $\log\,\text{unique\_out\_cp}$
+      \item \textbf{Транзакционные объёмы}: $\log\,\text{total\_btc\_in/out}$, $\log\,\text{avg\_btc\_in/out}$
+      \item \textbf{Временные паттерны}: recency, activity\_span, $\log\,\text{event\_rate}$, burstiness
+      \item \textbf{Энтропия контрагентов}: out/in counterparty entropy
+    \end{itemize}
+    \column{0.42\textwidth}
+    \textbf{Признаки пары $(s, d)$}:
+    \begin{itemize}
+      \item Конкатенация 15 признаков узла-источника $s$ и 15 признаков узла-назначения $d$
+      \item Итого: вектор размерности \textbf{30}
+    \end{itemize}
+    \vspace{0.3cm}
+    \textbf{Стратегия семплирования}: случайное семплирование негативных рёбер с фиксированным источником ($N_\text{neg} = 1$)
+    \vspace{0.3cm}
+    {\small Такая схема сводит ранжирование к бинарной классификации пар}
+  \end{columns}
+\end{frame}
+
+% Слайд 12: Архитектура библиотеки
+\section{Архитектура библиотеки}
+\begin{frame}
+  \frametitle{Архитектура библиотеки \texttt{payment-graph-forecasting}}
+  \begin{columns}
+    \column{0.52\textwidth}
+    \textbf{11 пакетных областей канонического API:}
+    \begin{itemize}
+      \item \texttt{config} — типизированные YAML-конфигурации (\texttt{ExperimentSpec})
+      \item \texttt{models} — адаптеры и реестр 7 семейств моделей
+      \item \texttt{training} / \texttt{evaluation} — единый цикл обучения и оценки
+      \item \texttt{data} — stream graph в parquet-формате
+      \item \texttt{sampling} — стратегии негативного семплирования
+      \item \texttt{cuda} — GPU-ускоренные примитивы
+      \item \texttt{graph\_metrics}, \texttt{analysis}, \texttt{experiments}, \texttt{infra}
+    \end{itemize}
+    \column{0.45\textwidth}
+    \textbf{Пользовательские сценарии:}
+    \begin{enumerate}
+      \item \textbf{YAML-запуск}: декларативное описание эксперимента
+      \item \textbf{Python API}: прямое использование из кода
+      \item \textbf{ИИ-ассистент}: встроенный агентный сценарий
+    \end{enumerate}
+    \vspace{0.3cm}
+    \textbf{Количественные характеристики:}
+    \begin{itemize}
+      \item 7 моделей в реестре
+      \item 6 источников данных
+      \item 3 backend'а: Python / C++ / CUDA
+      \item \textbf{47 тестовых файлов}
+    \end{itemize}
+  \end{columns}
+\end{frame}
+
+% Слайд 13: YAML-пример
+\begin{frame}[fragile]
+  \frametitle{Использование библиотеки: YAML-конфигурация}
+  \begin{columns}
+    \column{0.5\textwidth}
+    {\small
+    \begin{verbatim}
+experiment:
+  name: eagle_library_smoke
+  model: eagle
+
+data:
+  source: stream_graph
+  parquet_path: /tmp/stream_graph.parquet
+  features_path: /tmp/features.parquet
+  fraction: 0.10
+
+sampling:
+  strategy: tgb_mixed
+  num_neighbors: 20
+  n_random_neg: 50
+  backend: auto
+
+training:
+  epochs: 5
+  batch_size: 200
+  lr: 0.001
+    \end{verbatim}
+    }
+    \column{0.47\textwidth}
+    \textbf{Запуск одной командой:}
+    {\small
+    \begin{verbatim}
+python -m payment_graph_forecasting\
+  .experiments.launcher \
+  --config exps/examples/eagle.yaml
+    \end{verbatim}
+    }
+    \vspace{0.3cm}
+    \textbf{Или через Python API:}
+    {\small
+    \begin{verbatim}
+from payment_graph_forecasting \
+  import launch_experiment
+
+spec = load_experiment_spec(
+  "eagle.yaml")
+result = launch_experiment(spec)
+    \end{verbatim}
+    }
+    \vspace{0.2cm}
+    GitHub: \texttt{paymentgraphforecasting/}\\
+    \texttt{payment-graph-forecasting}
+  \end{columns}
+\end{frame}
+
+% Слайд 14: CUDA-модуль
+\section{CUDA-модуль}
+\begin{frame}
+  \frametitle{CUDA-модуль: архитектура и примитивы}
+  \begin{columns}
+    \column{0.55\textwidth}
+    \textbf{Два реализованных примитива} (по 3 backend'а: Python / C++ / CUDA):
+    \vspace{0.2cm}
+    \begin{enumerate}
+      \item \textbf{Поиск временных соседей} (\texttt{TemporalGraphSampler})\\
+        Для узла $u$ и момента $t$: найти $K$ последних рёбер $(u, v, \tau)$ при $\tau < t$\\
+        {\small CUDA: CSR-граф переносится в GPU один раз, поиск и featurize выполняются на устройстве}
+      \vspace{0.2cm}
+      \item \textbf{Common Neighbors} (\texttt{CommonNeighbors})\\
+        $\text{CN}(u, v) = |\mathcal{N}(u) \cap \mathcal{N}(v)|$\\
+        {\small CUDA: bitset-представление множеств соседей, popcount-пересечение}
+    \end{enumerate}
+    \column{0.42\textwidth}
+    \textbf{Бенчмарк: поиск временных соседей}
+    \begin{table}
+    \tiny
+    \begin{tabular}{llr}
+      \toprule
+      Сценарий & Backend & Ускорение \\
+      \midrule
+      graphmixer\_small & Python & 1.0x \\
+      graphmixer\_small & cpp & 35.9x \\
+      graphmixer\_small & cuda & \textbf{49.9x} \\
+      \midrule
+      dygformer\_medium & Python & 1.0x \\
+      dygformer\_medium & cpp & 1.8x \\
+      dygformer\_medium & cuda & \textbf{183.7x} \\
+      \midrule
+      dygformer\_large & Python & 1.0x \\
+      dygformer\_large & cuda & \textbf{175.9x} \\
+      \bottomrule
+    \end{tabular}
+    \end{table}
+    {\small На синтетических бенчмарках; выигрыш растёт с числом соседей $K$}
+  \end{columns}
+\end{frame}
+
+% Слайд 15: CUDA — реальные данные
+\begin{frame}
+  \frametitle{CUDA-ускорение DyGFormer на реальных данных}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \textbf{Оптимизация}:
+    \begin{itemize}
+      \item Узкое место стандартного пайплайна DyGFormer — \textbf{подготовка батча}: темпоральное семплирование соседей, извлечение признаков и передача CPU$\to$GPU
+      \item Решение: перенос этапа батч-подготовки на \texttt{TemporalGraphSampler} с backend \texttt{cuda}, встроенный в библиотечный API
+      \item Активируется одной строкой конфига: \texttt{sampling.backend: cuda}
+    \end{itemize}
+    \column{0.47\textwidth}
+    \textbf{Время обучения одной эпохи (GPU NVIDIA Tesla V100)}
+    \begin{table}
+    \small
+    \begin{tabular}{lr}
+      \toprule
+      Конфигурация & Время, мин \\
+      \midrule
+      До оптимизации (CPU) & $\approx 55$ \\
+      После (CUDA batch prep) & $\approx 27.5$ \\
+      \midrule
+      \textbf{Ускорение} & \textbf{$\approx$2x} \\
+      \bottomrule
+    \end{tabular}
+    \end{table}
+    \vspace{0.2cm}
+    {\small Среднее по 11 измерениям: $1651.0$ с $\approx 27.5$ мин}\\
+    \vspace{0.2cm}
+    {\small Это \textbf{не синтетический бенчмарк} — ускорение проявляется в реальном обучающем пайплайне на реальных данных}
+  \end{columns}
+\end{frame}
+
+% Слайд 16: Выбор средств реализации
+\section{Выбор средств реализации}
+\begin{frame}
+  \frametitle{Выбор средств реализации}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \textbf{Основной стек}
+    \begin{itemize}
+      \item \textbf{Python 3.10+} — основной язык разработки
+      \item \textbf{PyTorch / PyG} — реализация нейросетевых моделей
+      \item \textbf{Pandas / Polars / PyArrow} — работа с данными в parquet
+      \item \textbf{Pydantic} — типизированные конфигурации (\texttt{ExperimentSpec})
+      \item \textbf{YAML} — декларативные конфигурации экспериментов
+    \end{itemize}
+    \column{0.47\textwidth}
+    \textbf{Вычислительное ускорение}
+    \begin{itemize}
+      \item \textbf{NumPy / SciPy} — Python-backend для семплирования и CN
+      \item \textbf{C++ extension (pybind11)} — cpp-backend: sorted merge, CSR-операции
+      \item \textbf{CUDA / cuBLAS} — cuda-backend: битсеты, параллельный поиск соседей
+    \end{itemize}
+    \vspace{0.2cm}
+    \textbf{Инфраструктура}
+    \begin{itemize}
+      \item \textbf{pytest} + 47 тестовых файлов
+      \item \textbf{GPU}: NVIDIA Tesla V100 для нейросетевых моделей
+    \end{itemize}
+  \end{columns}
+\end{frame}
+
+% Слайд 17: Результаты экспериментов
+\section{Результаты экспериментов}
+\begin{frame}
+  \frametitle{Результаты сравнительного эксперимента}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \begin{table}
+    \small
+    \begin{tabular}{lcccc}
+      \toprule
+      \textbf{Модель} & \textbf{MRR} & \textbf{val MRR} & \textbf{H@1} & \textbf{H@10} \\
+      \midrule
+      \textbf{CN} & \textbf{0.64} & 0.70 & 0.55 & 0.81 \\
+      AA & 0.63 & 0.69 & 0.54 & 0.79 \\
+      CN+MLP & 0.62 & 0.69 & 0.53 & 0.79 \\
+      Jaccard & 0.55 & 0.63 & 0.45 & 0.75 \\
+      RF & 0.52 & 0.56 & 0.41 & 0.74 \\
+      PA & 0.50 & 0.53 & 0.41 & 0.69 \\
+      CatBoost & 0.49 & 0.54 & 0.38 & 0.73 \\
+      LogReg & 0.35 & 0.36 & 0.26 & 0.52 \\
+      \midrule
+      EAGLE & 0.46 & 0.53 & 0.35 & 0.67 \\
+      DyGFormer & 0.40 & 0.45 & 0.31 & 0.60 \\
+      GraphMixer & 0.22 & 0.25 & 0.13 & 0.40 \\
+      GLFormer & 0.09 & 0.07 & 0.11 & 0.20 \\
+      \bottomrule
+    \end{tabular}
+    \end{table}
+    \column{0.47\textwidth}
+    \textbf{Ключевые наблюдения}
+    \begin{itemize}
+      \item \textbf{CN достигает MRR = 0.64} — лучший результат среди всех методов
+      \item Структурные эвристики \textbf{превосходят все GNN}: CN и AA опережают EAGLE на 0.18, DyGFormer на 0.24
+      \item CN+MLP с одним CN-признаком близок к чистому CN — MLP восстанавливает структурный сигнал
+      \item \textbf{Вывод}: в транзакционном графе Bitcoin структурная близость (наличие общих контрагентов) — доминирующий предиктор будущих связей
+      \item Темпоральные паттерны, на которых специализируются GNN, менее информативны на этом датасете
+    \end{itemize}
+  \end{columns}
+\end{frame}
+
+% Слайд 18: Аблационное исследование CN+MLP
+\begin{frame}
+  \frametitle{Аблационное исследование CN+MLP}
+  \begin{columns}
+    \column{0.55\textwidth}
+    \begin{table}
+    \small
+    \begin{tabular}{llcc}
+      \toprule
+      \textbf{ID} & \textbf{Признаки / условие} & \textbf{MRR} & \textbf{H@1} \\
+      \midrule
+      E6\_lr4 & cn\_uu, сниженный LR & \textbf{0.616} & \textbf{0.533} \\
+      E5 & cn\_uu, cosine scheduler & 0.606 & 0.525 \\
+      E1 & cn\_uu (baseline) & 0.603 & 0.522 \\
+      E9\_big & cn\_uu, большая MLP & 0.597 & 0.518 \\
+      E7\_e2 & cn\_uu + aa\_uu, короткое & 0.578 & 0.491 \\
+      E2 & cn\_uu + aa\_uu + log1p\_cn & 0.572 & 0.487 \\
+      E8\_all & 7 признаков, без dropout & 0.330 & 0.248 \\
+      E4 & 7 признаков, BCE loss & 0.326 & 0.254 \\
+      E3 & 7 признаков, BPR loss & 0.308 & 0.230 \\
+      \bottomrule
+    \end{tabular}
+    \end{table}
+    \column{0.42\textwidth}
+    \textbf{Выводы аблационного исследования}
+    \begin{itemize}
+      \item \textbf{cn\_uu — единственный значимый признак}: E1 (1 признак) vs. E2 (3 признака) — добавление ухудшает MRR $0.603 \to 0.572$
+      \item \textbf{7 признаков резко снижают качество}: E3–E8 дают MRR $\approx 0.31$–$0.33$ — примерно вдвое хуже E1
+      \item \textbf{Увеличение MLP не помогает}: E9\_big $\approx$ E1; узкое место — входной скалярный признак, а не ёмкость модели
+      \item \textbf{Тюнинг LR важнее архитектуры}: лучший результат E6\_lr4 достигнут без изменения признаков
+    \end{itemize}
+  \end{columns}
+\end{frame}
+
+% Слайд 19: Основные результаты
+\section{Результаты и выводы}
+\begin{frame}
+  \frametitle{Основные результаты}
+  \begin{enumerate}
+    \item \textbf{Сравнительный анализ}: протестировано $>$10 методов четырёх классов на едином разбиении реального Bitcoin-датасета по метрикам MRR, H@1, H@10
+    \vspace{0.2cm}
+    \item \textbf{Превосходство структурных методов}: CN достигает MRR = 0.64 и превосходит все GNN-архитектуры — наличие общих контрагентов является доминирующим предиктором на этом датасете
+    \vspace{0.2cm}
+    \item \textbf{Аблационное исследование CN+MLP}: единственный значимый признак — cn\_uu; расширение признакового пространства стабильно ухудшает результат; наибольший прирост — от тюнинга LR
+    \vspace{0.2cm}
+    \item \textbf{Библиотека payment-graph-forecasting}: расширяемая платформа с единым API, YAML-конфигурациями, 7 моделями, 47 тестами и документацией
+    \vspace{0.2cm}
+    \item \textbf{CUDA-ускорение}: до 183x ускорения поиска временных соседей на синтетических бенчмарках; 2x ускорение обучения DyGFormer на реальных данных ($55 \to 27.5$ мин/эпоха)
+  \end{enumerate}
+\end{frame}
+
+% Слайд 20: Направления дальнейшей работы
+\section{Направления дальнейшей работы}
+\begin{frame}
+  \frametitle{Направления дальнейшей работы}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \textbf{Исследовательские направления}
+    \begin{itemize}
+      \item Объяснить, почему структурные методы превосходят GNN: анализ структуры графа, роль «хабов», повторные взаимодействия
+      \item Проверить гипотезу на других финансовых датасетах (Ethereum, банковские данные)
+      \item Разработать гибридные модели, объединяющие структурный сигнал с темпоральными паттернами
+      \item Исследование более сложных стратегий семплирования (HIST, IND негативы)
+    \end{itemize}
+    \column{0.47\textwidth}
+    \textbf{Инженерные направления}
+    \begin{itemize}
+      \item Расширение библиотеки: добавление новых моделей через адаптерный слой без изменения API
+      \item Поддержка распределённого обучения (multi-GPU)
+      \item Расширение CUDA-модуля: параллельный Common Neighbors для более плотных графов
+      \item Интеграция с облачными хранилищами данных
+      \item HPO (hyperparameter optimization) entrypoints в \texttt{experiments} модуле
+    \end{itemize}
+  \end{columns}
+\end{frame}
+
+% Слайд 21: Доступ к коду
+\begin{frame}
+  \frametitle{Доступ к исходному коду}
+  \begin{itemize}
+    \item \textbf{Проект доступен как open source на GitHub:}
+      \begin{itemize}
+        \item \url{https://github.com/paymentgraphforecasting/payment-graph-forecasting}
+      \end{itemize}
+    \item \textbf{В репозитории доступны:}
+      \begin{itemize}
+        \item Канонический библиотечный API (\texttt{payment\_graph\_forecasting/})
+        \item 7 reference YAML-конфигураций в \texttt{exps/examples/}
+        \item Документация в \texttt{docs/}: CUDA-модуль, evaluation protocol, сценарии работы
+        \item 47 автоматических тестов в \texttt{tests/}
+        \item Инструкции по установке и сборке CUDA-расширений
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+% Слайд 22: Список источников
+\section{Список источников}
+\begin{frame}[allowframebreaks]
+  \frametitle{Список использованных источников}
+  \small
+  \begin{thebibliography}{99}
+    \bibitem{orbitaal} \textit{Béres F. et al.} ORBITAAL: A Comprehensive Bitcoin Dataset for Temporal Graph Analysis. — Zenodo, 2022. (CC BY 4.0)
+    \bibitem{dyglib} \textit{Yu L. et al.} Towards Better Dynamic Graph Learning: New Architecture and Unified Library. — NeurIPS, 2023.
+    \bibitem{tgb} \textit{Poursafaei F. et al.} Towards Better Evaluation for Dynamic Link Prediction. — NeurIPS, 2022.
+    \bibitem{cn} \textit{Liben-Nowell D., Kleinberg J.} The Link Prediction Problem for Social Networks. — JACM, 2007.
+    \bibitem{eagle} \textit{Li Z. et al.} EAGLE: Efficient and Effective GrAph modEL for temporal Link prEdiction. — 2024.
+    \bibitem{graphmixer} \textit{Cong W. et al.} Do We Really Need Complicated Model Architectures for Temporal Networks? — ICLR, 2023.
+    \bibitem{glformer} \textit{Kong L. et al.} GLFormer: Temporal Link Prediction with Global-Lens Transformer. — 2024.
+    \bibitem{dygformer} \textit{Yu L. et al.} DyGFormer: A Graph Transformer for Dynamic Graphs. — NeurIPS, 2023.
+    \bibitem{catboost} \textit{Prokhorenkova L. et al.} CatBoost: unbiased boosting with categorical features. — NeurIPS, 2018.
+    \bibitem{ctdne} \textit{Nguyen G. H. et al.} Continuous-Time Dynamic Network Embeddings. — WWW Companion, 2018.
+  \end{thebibliography}
+\end{frame}
+
+\end{document}
