@@ -1,0 +1,10 @@
+в прошлом году тут лежали такие картинки:
+image1.jpg
+MST_road_network_mst.png
+MST_road_network.png
+PR_pagerank_clusters.png
+PR_pagerank_histogram.png
+SIX_distance_bar_horizontal.png
+SIX_distance_pie_chart_simple.png
+
+в этом году вставим новые.

@@ -1,0 +1,678 @@
+%!TEX TS-program = xelatex
+
+\documentclass[aspectratio=169]{beamer}
+
+\newbool{russian}
+\booltrue{russian}  % Подключаем русскоязычный вариант логотипа и надписей
+
+% Подключаем стиль презентации HSE:
+\usepackage{HSE-theme/beamerthemeHSE}
+
+% Работа с русским языком и шрифтами
+\usepackage[english,russian]{babel}
+\usepackage[no-math]{fontspec}
+\setsansfont{HSESans-Regular}[
+    Path = HSE_Sans/,
+    BoldFont = HSESans-Bold.otf,
+    ItalicFont = HSESans-Italic.otf
+]
+\setmonofont{Courier New}
+\usepackage{mathspec}
+\setmathsfont(Digits,Latin,Greek)[
+  Path = HSE_Sans/,
+  Numbers = {Lining,Proportional}
+]{HSESans-Regular}
+\setmathrm[Path = HSE_Sans/,Numbers={Lining,Proportional}]{HSESans-Regular}
+
+\uselanguage{russian}
+\languagepath{russian}
+\deftranslation[to=russian]{Theorem}{Теорема}
+\deftranslation[to=russian]{Definition}{Определение}
+\deftranslation[to=russian]{Definitions}{Определен��я}
+\deftranslation[to=russian]{Corollary}{Следствие}
+\deftranslation[to=russian]{Fact}{Факт}
+\deftranslation[to=russian]{Example}{Пример}
+\deftranslation[to=russian]{Examples}{Примеры}
+
+\usepackage{graphicx}   % Для вставки изображений
+\graphicspath{{images/}} % Папка с картинками (если будете использовать)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Информация о выступлении
+
+\title[Библиотека на C++]{%
+  \fontsize{12}{14}\selectfont Разработка масштабируемой библиотеки для анализа и обработки графов с\\
+  \fontsize{12}{14}\selectfont поддержкой многопоточных вычислений на языке C++\\[0.3cm]
+  \fontsize{10}{12}\selectfont Development of a scalable library for graph analysis and processing with\\
+  \fontsize{10}{12}\selectfont support for multithreaded computing in C++
+}
+
+\subtitle{\fontsize{9}{11}\selectfont Индивидуальный программный проект}
+
+\author[Романюков Е.С.]{%
+  2 курс ОП «Прикладная математика и информатика», группа БПМИ237\\
+  \textbf{Романюков Егор Сергеевич}\\[0.3cm]
+  Научный руководитель:\\
+  \textbf{Галицкий Борис Васильевич}, Приглашенный преподаватель ФКН НИУ ВШЭ
+}
+
+\institute[НИУ ВШЭ]{%
+  Национальный исследовательский университет\\
+  «Высшая школа экономики»
+}
+
+\date{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+% Титульный слайд
+\frame[plain]{\titlepage}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Разделы и слайды по структуре презентации
+
+% 1. Описание предметной области
+\section{Описание предметной области}
+\begin{frame}
+  \frametitle{Описание предметной области}
+  \begin{itemize}
+    \item \textbf{Графы} — фундаментальные структуры данных, представляющие наборы объектов и связи между ними
+    \item \textbf{Применение графов}
+      \begin{itemize}
+        \item Социальные сети (связи между пользователями)
+        \item Дорожные сети (оптимальные маршруты)
+        \item Web-графы (структура веб-страниц)
+        \item Биологические сети (взаимодействие молекул)
+        \item Телекоммуникации (маршрутизация данных)
+      \end{itemize}
+    \item \textbf{Алгоритмы на графах} решают ключевые задачи в науках о данных и программной инженерии
+  \end{itemize}
+\end{frame}
+
+% 2. Актуальность работы
+\section{Актуальность работы}
+\begin{frame}
+  \frametitle{Актуальность работы}
+  \begin{itemize}
+    \item \textbf{Рост объема данных} требует эффективных инструментов для их анализа
+    \item \textbf{Современные задачи} требуют работы с большими графами (миллионы вершин)
+    \item \textbf{Существующие решения} часто
+      \begin{itemize}
+        \item Имеют ограниченную поддержку многопоточности
+        \item Не полностью используют возможности современного C++
+        \item Требуют дополнительных зависимостей от C-библиотек
+        \item Имеют ограниченный функционал
+      \end{itemize}
+    \item \textbf{Потребность} в производительной, гибкой и удобной библиотеке для работы с графами
+  \end{itemize}
+\end{frame}
+
+% 3. Цель и задачи
+\section{Цель и задачи}
+\begin{frame}
+  \frametitle{Цель и задачи}
+  \textbf{Цель}
+  \begin{itemize}
+    \item Разработать универсальную библиотеку для работы с графами на C++ с поддержкой многопоточных вычислений
+  \end{itemize}
+
+  \vspace{0.5cm}
+  \textbf{Задачи}
+  \begin{enumerate}
+    \item Реализовать различные способы представления графов
+    \item Имплементировать набор классических алгоритмов на графах
+    \item Разработать эффективные параллельные алгоритмы
+    \item Провести комплексное тестирование библиотеки
+    \item Обеспечить подробную и понятную документацию
+    \item Создать инструменты для визуализации графов
+  \end{enumerate}
+\end{frame}
+
+% 4. Анализ существующих решений
+\section{Анализ существующих решений}
+\begin{frame}
+  \frametitle{Анализ существующих решений}
+  \begin{itemize}
+    \item \textbf{Boost Graph Library (BGL)}
+      \begin{itemize}
+        \item (+) Широкий набор алгоритмов
+        \item (-) Сложный API, высокий порог вхождения
+        \item (-) Ограниченная поддержка многопоточности
+      \end{itemize}
+    \item \textbf{LEMON (Library for Efficient Modeling and Optimization in Networks)}
+      \begin{itemize}
+        \item (+) Хорошо подходит для задач комбинаторной оптимизации
+        \item (-) Отсутствие нативной поддержки параллельных вычислений
+      \end{itemize}
+    \item \textbf{igraph с обёрткой для C++}
+      \begin{itemize}
+        \item (+) Функциональность для анализа социальных сетей
+        \item (-) Зависимость от базовой C-библиотеки
+        \item (-) Ограниченное использование современных возможностей C++
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+% NEW. Функциональные требования
+\section{Функциональные требования}
+\begin{frame}
+  \frametitle{Функциональные требования}
+  \begin{itemize}
+    \item \textbf{Представление графов} 
+      \begin{itemize}
+        \item Поддержка ориентированных и неориентированных графов
+        \item Различные способы хранения 
+        \item Поддержка взвешенных рёбер и метаданных вершин
+      \end{itemize}
+    \item \textbf{Алгоритмы}
+      \begin{itemize}
+        \item Базовые: BFS, DFS, топологическая сортировка
+        \item Поиск кратчайших путей: Дейкстра, Беллман-Форд, A*
+        \item Минимальные остовные деревья: Прим, Крускал
+        \item Компоненты сильной связности, мосты, точки сочленения
+      \end{itemize}
+    \item \textbf{Многопоточность}
+      \begin{itemize}
+        \item Параллельные версии алгоритмов
+        \item Настраиваемое количество потоков
+        \item Потокобезопасность при параллельных операциях
+      \end{itemize}
+    \item \textbf{Экспорт и визуализация} в формат DOT
+  \end{itemize}
+\end{frame}
+
+% 5. Архитектура библиотеки
+\section{Архитектура библиотеки}
+\begin{frame}
+  \frametitle{Общая архитектура библиотеки}
+  \begin{columns}
+    \column{0.65\textwidth}
+    \begin{itemize}
+      \item \textbf{Модульная структура}
+        \begin{itemize}
+          \item \texttt{structure/} — представления графов
+          \item \texttt{algorithms/} — классические и параллельные алгоритмы
+          \item \texttt{visualization/} — инструменты визуализации
+          \item \texttt{tests/} — инструменты тестирования
+        \end{itemize}
+      \item \textbf{Принципы ООП}
+        \begin{itemize}
+          \item Полиморфизм 
+          \item Инкапсуляция 
+          \item Наследование 
+        \end{itemize}
+      \item \textbf{Метапрограммирование}
+        \begin{itemize}
+          \item Поддержка произвольных типов для вершин и ребер через шаблоны, проверка корректности типов на этапе компиляции, и др.
+        \end{itemize}
+    \end{itemize}
+    \column{0.35\textwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{example_arch}
+    \\{\footnotesize }
+  \end{columns}
+\end{frame}
+
+% 6. Структуры представления графов
+\section{Структуры представления графов}
+\begin{frame}
+  \frametitle{Структуры представления графов}
+  \begin{columns}
+    \column{0.6\textwidth}
+    \begin{itemize}
+      \item \textbf{Список смежности}
+        \begin{itemize}
+          \item Оптимален для разреженных графов
+          \item $O(n+m)$ памяти
+        \end{itemize}
+      \item \textbf{Матрица смежности}
+        \begin{itemize}
+          \item Быстрая проверка наличия ребра за $O(1)$
+          \item $O(n^2)$ памяти
+        \end{itemize}
+      \item \textbf{Список рёбер}
+        \begin{itemize}
+          \item Компактное хранение $O(m)$
+          \item Медленный поиск ребра за $O(m)$
+        \end{itemize}
+      \item \textbf{CSR (Compressed Sparse Row)}
+        \begin{itemize}
+          \item Оптимизирован для параллельной обработки
+          \item Эффективное хранение $O(n+m)$
+        \end{itemize}
+    \end{itemize}
+    \column{0.4\textwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{example_arch}
+    \\{\footnotesize }
+  \end{columns}
+\end{frame}
+
+% 7. Подход к многопоточным вычислениям
+\section{Подход к многопоточным вычислениям}
+\begin{frame}
+  \frametitle{Подход к многопоточным вычислениям}
+  \begin{itemize}
+    \item \textbf{Стратегии распараллеливания}
+      \begin{itemize}
+        \item Разделение данных (data parallelism)
+        \item Параллельное исследование графа из разных начальных точек
+        \item Атомарные операции для безопасного обновления общих данных
+      \end{itemize}
+    \item \textbf{Обеспечение потокобезопасности}
+      \begin{itemize}
+        \item Мьютексы для защиты критических секций
+        \item Атомарные операции для счетчиков
+        \item Локальные буферы для промежуточных результатов
+      \end{itemize}
+    \item \textbf{Оптимизации}
+      \begin{itemize}
+        \item Предварительное вычисление метаданных для оптимизации
+        \item Адаптивное определение оптимального числа потоков
+        \item Балансировка нагрузки между потоками
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+% NEWNEW. Выбор средств реализации
+\section{Выбор средств реализации}
+\begin{frame}
+  \frametitle{Выбор средств реализации}
+  \begin{itemize}
+    \item \textbf{C++ (C++20)}
+      \begin{itemize}
+        \item Высокая производительность и контроль над памятью
+        \item Шаблоны для обобщённого программирования
+        \item Стандартная библиотека (STL) с контейнерами и алгоритмами
+      \end{itemize}
+    \item \textbf{Многопоточность}
+      \begin{itemize}
+        \item std::thread для создания потоков и управления ими
+        \item Атомарные типы (std::atomic) для потокобезопасных операций
+        \item Мьютексы (std::mutex) для синхронизации доступа к общим данным
+      \end{itemize}
+    \item \textbf{Тестирование}
+      \begin{itemize}
+        \item Google Test для модульных и интеграционных тестов
+        \item Санитайзеры для выявления проблем (ThreadSanitizer)
+      \end{itemize}
+    \item \textbf{Визуализация:} GraphViz для построения графов по DOT-файлам
+    \item \textbf{Сборка и документация:} CMake
+  \end{itemize}
+\end{frame}
+
+% 8. Результаты тестирования производительности
+\section{Результаты тестирования}
+\begin{frame}
+  \frametitle{Результаты тестирования производительности}
+  \begin{columns}
+    \column{0.48\textwidth}
+    \textbf{BFS на большом графе}
+    \begin{table}
+    \centering
+    \small  % Уменьшаем размер шрифта
+    \begin{tabular}{|l|c|c|}
+    \hline
+    \textbf{Вариант} & \textbf{Время (с)} & \textbf{Уск.} \\
+    \hline
+    Послед. & 5.724 & 1.00x \\
+    \hline
+    Паралл. & 0.283 & 20.23x \\
+    \hline
+    \end{tabular}
+    \end{table}
+
+    \textbf{Параметры графа}
+    \begin{itemize}
+      \item 10M вершин
+      \item 100M рёбер
+      \item 8 потоков
+    \end{itemize}
+
+    \column{0.48\textwidth}
+    \textbf{Алгоритм Дейкстры}
+    \begin{table}
+    \centering
+    \small  % Уменьшаем размер шрифта
+    \begin{tabular}{|l|c|c|c|}
+    \hline
+    \textbf{Размер графа} & \textbf{Посл.} & \textbf{Пар.} & \textbf{Уск.} \\
+    \hline
+    1M в., 10M р. & 9.48с & 6.76с & 1.40x \\
+    \hline
+    1M в., 100M р. & 70.69с & 8.20с & 8.62x \\
+    \hline
+    \end{tabular}
+    \end{table}
+
+    \textbf{Выводы}
+    \begin{itemize}
+      \item Значительный прирост при увеличении плотности графа
+      \item CSR формат даёт лучшую локальность данных
+    \end{itemize}
+  \end{columns}
+\end{frame}
+
+% 9. Тестирование
+\begin{frame}
+  \frametitle{Тестирование разработанного решения}
+  \begin{itemize}
+    \item \textbf{Комплексная стратегия тестирования}
+      \begin{itemize}
+        \item Модульные тесты (Google Test)
+        \item Интеграционные тесты
+        \item Тесты производительности
+      \end{itemize}
+    \item \textbf{Тестирование корректности алгоритмов}
+      \begin{itemize}
+        \item Проверка на простых графах с известными результатами
+        \item Тестирование граничных случаев
+        \item Сравнение параллельных и последовательных реализаций
+      \end{itemize}
+    \item \textbf{Использование санитайзеров}
+      \begin{itemize}
+        \item ThreadSanitizer для обнаружения дата-рейсов и дэдлоков
+        \item AddressSanitizer для выявления проблем с памятью
+      \end{itemize}
+    \item \textbf{Автоматизация тестирования}
+      \begin{itemize}
+        \item CMake для автоматической сборки проекта
+        \item Автоматический запуск unit-тестов при сборке
+        \item Интеграция с Google Test фреймворком
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+% 10. Визуализация
+\section{Визуализация}
+\begin{frame}
+  \frametitle{Визуализация графов}
+  \begin{itemize}
+    \item \textbf{Модуль визуализации} преобразует графы в формат DOT
+      \begin{itemize}
+        \item Поддерживает все реализованные структуры графов
+        \item Генерирует текстовое описание на языке DOT
+        \item Интегрируется с GraphViz для создания изображений
+      \end{itemize}
+    \item \textbf{Возможности визуализации}
+      \begin{itemize}
+        \item Настройка цветов вершин и рёбер
+        \item Выделение определённых путей/подграфов
+        \item Отображение весов рёбер и меток вершин
+        \item Автоматическая компоновка графа
+      \end{itemize}
+    \item \textbf{Примеры визуализации}
+      \begin{itemize}
+        \item Графы дорожных сетей
+        \item Минимальные остовные деревья
+        \item Визуализация результатов алгоритмов поиска путей
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Пример визуализации}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{MST_road_network.png}
+    \vspace{0.3em}
+    \textbf{Исходный граф дорожной сети}
+    
+    \column{0.5\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{MST_road_network_mst.png}
+    \vspace{0.3em}
+    \textbf{Минимальное остовное дерево}
+  \end{columns}
+  
+  \vspace{0.5em}
+  \centerline{Граф российских дорог и его минимальное остовное дерево}
+\end{frame}
+
+% 11. Примеры применения
+%\section{Примеры применения}
+%\begin{frame}
+  %\frametitle{Примеры практических применений}
+  %\begin{itemize}
+    %\item \textbf{Анализ социальных связей (гипотеза "шести рукопожатий")}
+      %\begin{itemize}
+        %\item Граф: 3+ миллиона вершин, 23+ миллиона рёбер
+        %\item Многопоточный BFS (8 потоков) для анализа расстояний
+        %\item Результат: 95.7\% пользователей доступны в пределах 6 шагов
+        %\item Среднее расстояние: 5.13 шагов
+      %\end{itemize}
+    %\item \textbf{Многопоточный PageRank на веб-графе}
+      %\begin{itemize}
+        %\item Датасет: SNAP Google-Web
+        %\item Значительное ускорение за счёт распределения нагрузки
+        %\item Эффективное ранжирование узлов в крупном графе
+      %\end{itemize}
+  %\end{itemize}
+
+  %Эксперименты демонстрируют возможность эффективной обработки реальных графов большого размера с использованием разработанных методов.
+%\end{frame}
+
+
+
+\begin{frame}{Пример применения: гипотеза шести рукопожатий}
+  \begin{itemize}
+    \item \textbf{Датасет:} социальный граф Facebook (3,097,165 вершин, 23,667,394 рёбер)
+    \item \textbf{Эксперимент:} многопоточный BFS с 8 потоками от 100 случайных вершин
+    \item \textbf{Ключевые результаты}
+    \begin{itemize}
+      \item 95.70\% пользователей соединены не более чем 6 рукопожатиями
+      \item Среднее расстояние между пользователями: 5.13
+      \item Загрузка и подготовка графа: 21.8 секунд
+      \item Полный анализ: 81.7 секунд (с 8 потоками)
+    \end{itemize}
+    \item \textbf{Распределение расстояний}
+    \begin{itemize}
+      \item 4 рукопожатия: 20.33\%
+      \item 5 рукопожатий: 44.59\%
+      \item 6 рукопожатий: 28.63\%
+    \end{itemize}
+  \end{itemize}
+  % Здесь будет диаграмма распределения расстояний
+\end{frame}
+
+
+
+
+
+%\begin{frame}{Пример применения: гипотеза шести рукопожатий}
+  % Здесь будет диаграмма распределения расстояний
+  %\includegraphics[width=0.63\textwidth]{SIX_distance_pie_chart_simple.png}
+%\end{frame}
+
+
+
+
+
+\begin{frame}{Пример применения: гипотеза шести рукопожатий}
+  % Здесь будет диаграмма распределения расстояний
+  \includegraphics[width=0.84\textwidth]{SIX_distance_bar_horizontal.png}
+\end{frame}
+
+
+
+
+
+\begin{frame}{Пример применения: PageRank для веб-графа Google}
+  \begin{itemize}
+    \item \textbf{Датасет:} веб-граф Google (875,713 вершин, 5,105,039 рёбер)
+    \item \textbf{Эксперимент:} параллельный PageRank с разным числом потоков
+    \item \textbf{Результаты ускорения}
+    \begin{center}
+      \begin{tabular}{|c|c|c|}
+        \hline
+        \textbf{Потоки} & \textbf{Время (с)} & \textbf{Ускорение} \\
+        \hline
+        1 & 5.68 & 1.00x \\
+        2 & 4.51 & 1.26x \\
+        4 & 3.51 & 1.62x \\
+        8 & 3.01 & 1.89x \\
+        16 & 2.61 & 2.18x \\
+        \hline
+      \end{tabular}
+    \end{center}
+    \item Анализ ТОП-100 вершин по рангу показывает ключевые страницы
+    \item Реализация оптимизирована для эффективной работы с разреженными графами
+  \end{itemize}
+  % Здесь будет график ускорения
+\end{frame}
+
+
+
+
+
+\begin{frame}{Пример применения: PageRank для веб-графа Google}
+  % Здесь будет диаграмма распределения расстояний
+  \includegraphics[width=0.84\textwidth]{PR_pagerank_histogram.png}
+\end{frame}
+
+
+
+
+
+\begin{frame}{Пример применения: PageRank для веб-графа Google}
+  % Здесь будет диаграмма распределения расстояний
+  \includegraphics[width=0.99\textwidth]{PR_pagerank_clusters.png}
+\end{frame}
+
+
+
+
+
+% 12. Результаты и выводы
+\section{Результаты и выводы}
+\begin{frame}
+  \frametitle{Результаты и выводы}
+  \begin{itemize}
+    \item \textbf{Результаты работы}
+      \begin{itemize}
+        \item Создана универсальная библиотека для работы с графами на C++
+        \item Реализованы различные представления графов (список смежности, CSR и др.)
+        \item Имплементированы классические и параллельные алгоритмы
+        \item Достигнуто значительное ускорение (до 20x для BFS)
+        \item Разработаны инструменты визуализации для анализа данных
+      \end{itemize}
+    \item \textbf{Преимущества решения}
+      \begin{itemize}
+        \item Современный C++ (использование новейших стандартов)
+        \item Интуитивно понятное использование
+        \item Встроенная поддержка многопоточности
+        \item Гибкая и расширяемая архитектура
+        \item Широкий спектр алгоритмов
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Дальнейшие направления развития}
+  \begin{itemize}
+    \item \textbf{Расширение функционала}
+      \begin{itemize}
+        \item Добавление новых алгоритмов (потоковых, для сопоставления и др.)
+        \item Реализация распределенных алгоритмов для вычисления на кластерах
+        \item Интеграция с GPU-ускорением для избранных алгоритмов
+      \end{itemize}
+    \item \textbf{Улучшение производительности}
+      \begin{itemize}
+        \item Дополнительная оптимизация критических участков кода
+        \item Адаптивное определение параметров параллелизации
+        \item Исследование новых структур данных для специфических задач
+      \end{itemize}
+    \item \textbf{Дополнительные инструменты}
+      \begin{itemize}
+        \item Расширение возможностей визуализации
+        \item Добавление аналитических инструментов для оценки характеристик графов
+        \item Разработка готовых решений для типичных задач на графах
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+% 13. Список источников
+%\section{Список источников}
+%\begin{frame}[allowframebreaks]
+  %\frametitle{Список использованных источников}
+  %\small
+  %\begin{thebibliography}{99}
+    %\bibitem{cormen-algorithms} \textit{Кормен Т., Лейзерсон Ч., Ривест Р., Штайн К.} Алгоритмы: построение и анализ, 3-е издание. — М.: Вильямс, 2013.
+    %\bibitem{wilson-graph-theory} \textit{Wilson R.J.} Introduction to Graph Theory, 5th edition. — Pearson, 2010.
+    %\bibitem{williams-concurrency} \textit{Williams A.} C++ Concurrency in Action. — Manning Publications, 2012.
+    %\bibitem{snap-dataset} SNAP Datasets: Stanford Large Network Dataset Collection, \url{https://snap.stanford.edu/data/}
+    %\bibitem{networkrepository} Network Repository, \url{http://networkrepository.com}
+    %\bibitem{boost} Boost Graph Library (BGL), \url{https://www.boost.org/doc/libs/release/libs/graph/}
+    %\bibitem{lemon} LEMON Graph Library, \url{https://lemon.cs.elte.hu}
+    %\bibitem{igraph} igraph – The network analysis package, \url{https://igraph.org/}
+  %\end{thebibliography}
+%\end{frame}
+
+
+
+%\begin{frame}{Выводы}
+  %\begin{itemize}
+    %\item \textbf{Разработана универсальная библиотека} для работы с графами на C++:
+    %\begin{itemize}
+      %\item Гибкая архитектура с поддержкой 4 способов хранения графов
+      %\item Реализация классических и параллельных алгоритмов
+      %\item Удобная визуализация через экспорт в формат DOT (GraphViz)
+    %\end{itemize}
+    %\item \textbf{Экспериментально доказана эффективность} параллельных реализаций:
+    %\begin{itemize}
+      %\item До 20x ускорение для BFS на плотных графах
+      %\item До 8.62x ускорение для алгоритма Дейкстры на плотных графах
+      %\item 2.18x ускорение для PageRank на веб-графе Google
+    %\end{itemize}
+    %\item \textbf{Практическая применимость} продемонстрирована на реальных задачах:
+    %\begin{itemize}
+      %\item Подтверждение гипотезы шести рукопожатий в социальных сетях
+      %\item Ранжирование страниц в веб-графе
+    %\end{itemize}
+  %\end{itemize}
+%\end{frame}
+
+\begin{frame}{Доступ к исходному коду}
+  \begin{itemize}
+    \item \textbf{Проект доступен как open source на GitHub:} 
+      \begin{itemize}
+        \item \url{https://github.com/kunikrubika05/graph-library-cpp}
+      \end{itemize}
+    \item \textbf{В репозитории доступна подробная документация:}
+      \begin{itemize}
+        \item Инструкция по установке и сборке библиотеки
+        \item Руководство по использованию с примерами
+        \item Описание алгоритмов и структур данных
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+% Заключение
+%\begin{frame}
+  %\centering
+  %\Huge{Спасибо за внимание!}
+%\end{frame}
+
+\section{Результаты и выводы}
+\begin{frame}
+  \frametitle{Результаты и выводы}
+  \begin{itemize}
+    \item \textbf{Результаты работы}
+      \begin{itemize}
+        \item Создана универсальная библиотека для работы с графами на C++
+        \item Реализованы различные представления графов (список смежности, CSR и др.)
+        \item Имплементированы классические и параллельные алгоритмы
+        \item Достигнуто значительное ускорение (до 20x для BFS)
+        \item Разработаны инструменты визуализации для анализа данных
+      \end{itemize}
+    \item \textbf{Преимущества решения}
+      \begin{itemize}
+        \item Современный C++ (использование новейших стандартов)
+        \item Интуитивно понятное использование
+        \item Встроенная поддержка многопоточности
+        \item Гибкая и расширяемая архитектура
+        \item Широкий спектр алгоритмов
+      \end{itemize}
+  \end{itemize}
+\end{frame}
