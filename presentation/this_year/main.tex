@@ -38,6 +38,19 @@
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{colortbl}
+\usepackage{listings}
+\lstset{
+  basicstyle=\tiny\ttfamily,
+  backgroundcolor=\color{gray!12},
+  breaklines=true,
+  breakatwhitespace=false,
+  frame=single,
+  framesep=2pt,
+  xleftmargin=2pt,
+  xrightmargin=2pt,
+  framerule=0.3pt,
+  rulecolor=\color{gray!50}
+}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Информация о выступлении
@@ -170,6 +183,7 @@
   \frametitle{Датасет: ORBITAAL (Bitcoin, 2020)}
   \begin{columns}
     \column{0.5\textwidth}
+    \footnotesize
     \textbf{ORBITAAL} — полный временной граф биткоин-транзакций (2009–2021)
     \begin{itemize}
       \item Используем 10\% рёбер периода \textbf{2020-06-01 — 2020-08-31}
@@ -192,6 +206,7 @@
     \end{tabular}
     \end{table}
     \column{0.47\textwidth}
+    \footnotesize
     \textbf{Сравнение с классическими датасетами}
     \begin{table}
     \tiny
@@ -253,7 +268,7 @@
       \item Декларативный запуск через YAML-конфигурации
       \item Поддержка формата stream graph (parquet)
       \item Взаимозаменяемые backend'ы: Python / C++ / CUDA
-      \item Автоматическое тестирование (47 тестовых файлов)
+      \item Автоматическое тестирование (всё покрыто тестами)
       \item Документация и примеры запуска
     \end{itemize}
   \end{columns}
@@ -265,6 +280,7 @@
   \frametitle{Методы предсказания связей: обзор}
   \begin{columns}
     \column{0.5\textwidth}
+    \footnotesize
     \textbf{Структурные эвристики}
     \begin{itemize}
       \item \textbf{Common Neighbors (CN)}: $|\mathcal{N}(s) \cap \mathcal{N}(d)|$
@@ -281,6 +297,7 @@
       \item \textbf{CN+MLP} — CN-признак + признаки узлов, двухслойный перцептрон
     \end{itemize}
     \column{0.47\textwidth}
+    \footnotesize
     \textbf{Temporal GNN-архитектуры}
     \begin{itemize}
       \item \textbf{EAGLE}: time-aware + structure-aware модули с T-PPR; линейная сложность
@@ -297,7 +314,7 @@
   \begin{itemize}
     \item \textbf{Структурные эвристики} (CN, AA, Jaccard, PA): образуют сильный нижний порог; на реальных датасетах неожиданно конкурентоспособны с GNN \textit{[Poursafaei et al., 2022]}
     \item \textbf{Классические ML} (LogReg, RF, CatBoost, CN+MLP): проверяют линейную разделимость признаков и сочетание структурного сигнала с атрибутивной информацией
-    \item \textbf{Глубокие модели}: выбраны 4 архитектуры, покрывающие широкий спектр:
+    \item \textbf{Нейросети}: выбраны 4 архитектуры, покрывающие широкий спектр:
       \begin{itemize}
         \item По вычислительной сложности: от почти линейных (EAGLE, GraphMixer) до квадратичных (DyGFormer)
         \item По способу учёта времени: адаптивные веса (EAGLE, GLFormer) vs. явный патчинг (DyGFormer, GraphMixer)
@@ -340,7 +357,8 @@
   \frametitle{Архитектура библиотеки \texttt{payment-graph-forecasting}}
   \begin{columns}
     \column{0.52\textwidth}
-    \textbf{11 пакетных областей канонического API:}
+    \small
+    \textbf{11 пакетных областей API:}
     \begin{itemize}
       \item \texttt{config} — типизированные YAML-конфигурации (\texttt{ExperimentSpec})
       \item \texttt{models} — адаптеры и реестр 7 семейств моделей
@@ -351,6 +369,7 @@
       \item \texttt{graph\_metrics}, \texttt{analysis}, \texttt{experiments}, \texttt{infra}
     \end{itemize}
     \column{0.45\textwidth}
+    \small
     \textbf{Пользовательские сценарии:}
     \begin{enumerate}
       \item \textbf{YAML-запуск}: декларативное описание эксперимента
@@ -363,7 +382,7 @@
       \item 7 моделей в реестре
       \item 6 источников данных
       \item 3 backend'а: Python / C++ / CUDA
-      \item \textbf{47 тестовых файлов}
+      \item \textbf{Всё покрыто тестами}
     \end{itemize}
   \end{columns}
 \end{frame}
@@ -372,9 +391,8 @@
 \begin{frame}[fragile]
   \frametitle{Использование библиотеки: YAML-конфигурация}
   \begin{columns}
-    \column{0.5\textwidth}
-    {\small
-    \begin{verbatim}
+    \column{0.51\textwidth}
+\begin{lstlisting}
 experiment:
   name: eagle_library_smoke
   model: eagle
@@ -395,32 +413,27 @@ training:
   epochs: 5
   batch_size: 200
   lr: 0.001
-    \end{verbatim}
-    }
-    \column{0.47\textwidth}
-    \textbf{Запуск одной командой:}
-    {\small
-    \begin{verbatim}
+\end{lstlisting}
+    \column{0.46\textwidth}
+    \footnotesize\textbf{Запуск одной командой:}
+\begin{lstlisting}
 python -m payment_graph_forecasting\
   .experiments.launcher \
   --config exps/examples/eagle.yaml
-    \end{verbatim}
-    }
-    \vspace{0.3cm}
-    \textbf{Или через Python API:}
-    {\small
-    \begin{verbatim}
+\end{lstlisting}
+    \vspace{0.15cm}
+    \footnotesize\textbf{Или через Python API:}
+\begin{lstlisting}
 from payment_graph_forecasting \
   import launch_experiment
 
 spec = load_experiment_spec(
   "eagle.yaml")
 result = launch_experiment(spec)
-    \end{verbatim}
-    }
-    \vspace{0.2cm}
-    GitHub: \texttt{paymentgraphforecasting/}\\
-    \texttt{payment-graph-forecasting}
+\end{lstlisting}
+    \vspace{0.15cm}
+    {\footnotesize GitHub: \texttt{paymentgraphforecasting/}\\
+    \texttt{payment-graph-forecasting}}
   \end{columns}
 \end{frame}
 
@@ -453,12 +466,21 @@ result = launch_experiment(spec)
       graphmixer\_small & cpp & 35.9x \\
       graphmixer\_small & cuda & \textbf{49.9x} \\
       \midrule
+      dygformer\_small & Python & 1.0x \\
+      dygformer\_small & cpp & 2.8x \\
+      dygformer\_small & cuda & \textbf{64.2x} \\
+      \midrule
       dygformer\_medium & Python & 1.0x \\
       dygformer\_medium & cpp & 1.8x \\
       dygformer\_medium & cuda & \textbf{183.7x} \\
       \midrule
       dygformer\_large & Python & 1.0x \\
+      dygformer\_large & cpp & 1.8x \\
       dygformer\_large & cuda & \textbf{175.9x} \\
+      \midrule
+      real\_scale & Python & 1.0x \\
+      real\_scale & cpp & 3.3x \\
+      real\_scale & cuda & \textbf{48.5x} \\
       \bottomrule
     \end{tabular}
     \end{table}
@@ -466,11 +488,46 @@ result = launch_experiment(spec)
   \end{columns}
 \end{frame}
 
+% Полная таблица бенчмарка TemporalGraphSampler
+\begin{frame}
+  \frametitle{Бенчмарк TemporalGraphSampler: полная таблица}
+  \begin{table}
+  \footnotesize
+  \begin{tabular}{llrrrr}
+    \toprule
+    \textbf{Сценарий} & \textbf{Backend} & \textbf{Sample, мс} & \textbf{Feat, мс} & \textbf{Total, мс} & \textbf{Ускорение} \\
+    \midrule
+    graphmixer\_small & python & 2.74 & 4.82 & 7.55 & 1.0x \\
+    graphmixer\_small & cpp    & 0.07 & 0.14 & 0.21 & 35.9x \\
+    graphmixer\_small & cuda   & 0.08 & 0.07 & 0.15 & \textbf{49.9x} \\
+    \midrule
+    dygformer\_small  & python & 3.04 & 8.46 & 11.49 & 1.0x \\
+    dygformer\_small  & cpp    & 0.40 & 3.63 & 4.04  & 2.8x \\
+    dygformer\_small  & cuda   & 0.09 & 0.09 & 0.18  & \textbf{64.2x} \\
+    \midrule
+    dygformer\_medium & python & 14.10 & 48.30 & 62.33 & 1.0x \\
+    dygformer\_medium & cpp    & 2.12  & 32.07 & 34.22 & 1.8x \\
+    dygformer\_medium & cuda   & 0.12  & 0.22  & 0.34  & \textbf{183.7x} \\
+    \midrule
+    dygformer\_large  & python & 14.20 & 49.16 & 63.53 & 1.0x \\
+    dygformer\_large  & cpp    & 2.14  & 33.08 & 35.26 & 1.8x \\
+    dygformer\_large  & cuda   & 0.13  & 0.23  & 0.36  & \textbf{175.9x} \\
+    \midrule
+    real\_scale       & python & 2.79  & 5.89  & 8.64  & 1.0x \\
+    real\_scale       & cpp    & 0.38  & 2.21  & 2.61  & 3.3x \\
+    real\_scale       & cuda   & 0.09  & 0.09  & 0.18  & \textbf{48.5x} \\
+    \bottomrule
+  \end{tabular}
+  \end{table}
+  {\small Синтетические данные; ускорение — относительно python-backend}
+\end{frame}
+
 % Слайд 15: CUDA — реальные данные
 \begin{frame}
   \frametitle{CUDA-ускорение DyGFormer на реальных данных}
   \begin{columns}
     \column{0.5\textwidth}
+    \small
     \textbf{Оптимизация}:
     \begin{itemize}
       \item Узкое место стандартного пайплайна DyGFormer — \textbf{подготовка батча}: темпоральное семплирование соседей, извлечение признаков и передача CPU$\to$GPU
@@ -478,6 +535,7 @@ result = launch_experiment(spec)
       \item Активируется одной строкой конфига: \texttt{sampling.backend: cuda}
     \end{itemize}
     \column{0.47\textwidth}
+    \small
     \textbf{Время обучения одной эпохи (GPU NVIDIA Tesla V100)}
     \begin{table}
     \small
@@ -523,7 +581,7 @@ result = launch_experiment(spec)
     \vspace{0.2cm}
     \textbf{Инфраструктура}
     \begin{itemize}
-      \item \textbf{pytest} + 47 тестовых файлов
+      \item \textbf{pytest} + всё покрыто тестами
       \item \textbf{GPU}: NVIDIA Tesla V100 для нейросетевых моделей
     \end{itemize}
   \end{columns}
