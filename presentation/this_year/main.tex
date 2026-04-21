@@ -172,8 +172,6 @@
     $$\text{MRR} = \frac{1}{|\mathcal{E}_\text{eval}|} \sum_{i=1}^{|\mathcal{E}_\text{eval}|} \frac{1}{r_i}$$
     \textbf{H@K} (Hits@K):
     $$\text{H@K} = \frac{1}{|\mathcal{E}_\text{eval}|} \sum_{i} \mathbf{1}[r_i \le K]$$
-    \vspace{0.1cm}
-    {\small При $N_\text{neg}=1$: MRR $\in \{0.5, 1.0\}$,\\интерпретируется как доля правильно ранжированных пар}
   \end{columns}
 \end{frame}
 
@@ -332,27 +330,45 @@
 \section{Особенности реализации}
 \begin{frame}
   \frametitle{Признаковое описание узлов}
-  \begin{columns}
-    \column{0.55\textwidth}
-    Каждый узел $v$ характеризуется \textbf{15 признаками}, вычисленными исключительно на обучающей выборке (без утечки данных):
+  \vspace{0.2cm}
+  Каждый узел характеризуется \textbf{15 признаками}, вычисленными исключительно на обучающей выборке (без утечки данных):
+
+  \vspace{0.2cm}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.49\textwidth}
+    \raggedright
+    \textbf{Структура и взаимодействия}
     \begin{itemize}
-      \item \textbf{Степенные}: $\log\,\text{in\_degree}$, $\log\,\text{out\_degree}$, \text{in\_out\_ratio}
-      \item \textbf{Уникальные контрагенты}: $\log\,\text{unique\_in\_cp}$, $\log\,\text{unique\_out\_cp}$
-      \item \textbf{Транзакционные объёмы}: $\log\,\text{total\_btc\_in/out}$, $\log\,\text{avg\_btc\_in/out}$
-      \item \textbf{Временные паттерны}: recency, activity\_span, $\log\,\text{event\_rate}$, burstiness
-      \item \textbf{Энтропия контрагентов}: out/in counterparty entropy
+      \item \textbf{Степенные}:\\
+        $\log\,\text{in\_degree}$, $\log\,\text{out\_degree}$,\\
+        \text{in\_out\_ratio}
+      \item \textbf{Уникальные связанные адреса}:\\
+        $\log\,\text{unique\_in\_cp}$,\\
+        $\log\,\text{unique\_out\_cp}$
+      \item \textbf{Энтропия связанных адресов}:\\
+        out/in counterparty entropy
     \end{itemize}
-    \column{0.42\textwidth}
-    \textbf{Признаки пары $(s, d)$}:
+    \column{0.49\textwidth}
+    \raggedright
+    \textbf{Объёмы и временная активность}
     \begin{itemize}
-      \item Конкатенация 15 признаков узла-источника $s$ и 15 признаков узла-назначения $d$
-      \item Итого: вектор размерности \textbf{30}
+      \item \textbf{Транзакционные объёмы}:\\
+        $\log\,\text{total\_btc\_in/out}$,\\
+        $\log\,\text{avg\_btc\_in/out}$
+      \item \textbf{Временные паттерны}:\\
+        recency, activity\_span,\\
+        $\log\,\text{event\_rate}$, burstiness
     \end{itemize}
-    \vspace{0.3cm}
-    \textbf{Стратегия семплирования}: случайное семплирование негативных рёбер с фиксированным источником ($N_\text{neg} = 1$)
-    \vspace{0.3cm}
-    {\small Такая схема сводит ранжирование к бинарной классификации пар}
   \end{columns}
+
+  \vspace{0.1cm}
+  {\footnotesize
+    \begin{beamercolorbox}[wd=\textwidth,sep=0.10cm,rounded=true]{BlueOnWhite}
+      \textbf{Пара $(s, d)$}: 15 признаков отправителя + 15 признаков получателя
+      
+      \textbf{Итог:} получается вектор размерности \textbf{30}
+    \end{beamercolorbox}
+  }
 \end{frame}
 
 % Слайд 12: Архитектура библиотеки
@@ -445,56 +461,33 @@ result = launch_experiment(spec)
 \section{CUDA-модуль}
 \begin{frame}
   \frametitle{CUDA-модуль: архитектура и примитивы}
-  \begin{columns}
-    \column{0.55\textwidth}
+  \small
+  \begin{columns}[T]
+    \column{0.56\textwidth}
     \textbf{Два реализованных примитива} (по 3 backend'а: Python / C++ / CUDA):
     \vspace{0.2cm}
     \begin{enumerate}
       \item \textbf{Поиск временных соседей} (\texttt{TemporalGraphSampler})\\
         Для узла $u$ и момента $t$: найти $K$ последних рёбер $(u, v, \tau)$ при $\tau < t$\\
-        {\small CUDA: CSR-граф переносится в GPU один раз, поиск и featurize выполняются на устройстве}
+        {\small CUDA: CSR-граф переносится в память GPU один раз; далее поиск соседей и извлечение признаков выполняются на GPU}
       \vspace{0.2cm}
       \item \textbf{Common Neighbors} (\texttt{CommonNeighbors})\\
         $\text{CN}(u, v) = |\mathcal{N}(u) \cap \mathcal{N}(v)|$\\
-        {\small CUDA: bitset-представление множеств соседей, popcount-пересечение}
+        {\small CUDA: bitset-представление множеств соседей и popcount для побитового пересечения}
     \end{enumerate}
-    \column{0.42\textwidth}
-    \textbf{Бенчмарк: поиск временных соседей}
-    \begin{table}
-    \tiny
-    \begin{tabular}{llr}
-      \toprule
-      Сценарий & Backend & Ускорение \\
-      \midrule
-      graphmixer\_small & Python & 1.0x \\
-      graphmixer\_small & cpp & 35.9x \\
-      graphmixer\_small & cuda & \textbf{49.9x} \\
-      \midrule
-      dygformer\_small & Python & 1.0x \\
-      dygformer\_small & cpp & 2.8x \\
-      dygformer\_small & cuda & \textbf{64.2x} \\
-      \midrule
-      dygformer\_medium & Python & 1.0x \\
-      dygformer\_medium & cpp & 1.8x \\
-      dygformer\_medium & cuda & \textbf{183.7x} \\
-      \midrule
-      dygformer\_large & Python & 1.0x \\
-      dygformer\_large & cpp & 1.8x \\
-      dygformer\_large & cuda & \textbf{175.9x} \\
-      \midrule
-      real\_scale & Python & 1.0x \\
-      real\_scale & cpp & 3.3x \\
-      real\_scale & cuda & \textbf{48.5x} \\
-      \bottomrule
-    \end{tabular}
-    \end{table}
-    {\small На синтетических бенчмарках; выигрыш растёт с числом соседей $K$}
+    \column{0.40\textwidth}
+    \textbf{Роль в библиотеке}
+    \begin{itemize}
+      \item \texttt{TemporalGraphSampler} используется как backend подготовки батча для GraphMixer, GLFormer и DyGFormer
+      \item Стадия извлечения признаков собирает признаки соседей, рёбер и относительные временные интервалы
+      \item \texttt{CommonNeighbors} используется как самостоятельная эвристика и как признак для ML-моделей
+    \end{itemize}
   \end{columns}
 \end{frame}
 
 % Полная таблица бенчмарка TemporalGraphSampler
 \begin{frame}
-  \frametitle{Бенчмарк TemporalGraphSampler: полная таблица}
+  \frametitle{Бенчмарк TemporalGraphSampler}
   \begin{table}
   \footnotesize
   \begin{tabular}{llrrrr}
@@ -526,7 +519,41 @@ result = launch_experiment(spec)
   {\small Синтетические данные; ускорение — относительно python-backend}
 \end{frame}
 
-% Слайд 15: CUDA — реальные данные
+% Слайд 16: Common Neighbors benchmark
+\begin{frame}
+  \frametitle{Бенчмарк Common Neighbors}
+  \begin{table}
+  \footnotesize
+  \begin{tabular}{llrrr}
+    \toprule
+    \textbf{Сценарий} & \textbf{Backend} & \textbf{Median, мс} & \textbf{p95, мс} & \textbf{Ускорение} \\
+    \midrule
+    sparse\_like\_bitcoin & python & 0.42 & 0.48 & 1.0x \\
+    sparse\_like\_bitcoin & cpp    & 0.07 & 0.08 & \textbf{5.9x} \\
+    sparse\_like\_bitcoin & cuda   & 1.18 & 1.24 & 0.4x \\
+    \midrule
+    breakeven            & python & 1.27 & 1.36 & 1.0x \\
+    breakeven            & cpp    & 0.57 & 0.62 & 2.2x \\
+    breakeven            & cuda   & 0.73 & 0.81 & 1.7x \\
+    \midrule
+    dense\_small         & python & 2.00 & 2.08 & 1.0x \\
+    dense\_small         & cpp    & 1.02 & 1.06 & 1.9x \\
+    dense\_small         & cuda   & 0.42 & 0.48 & 4.8x \\
+    \midrule
+    dense\_medium        & python & 8.51 & 8.88 & 1.0x \\
+    dense\_medium        & cpp    & 5.05 & 5.21 & 1.7x \\
+    dense\_medium        & cuda   & 0.71 & 0.75 & 12.0x \\
+    \midrule
+    dense\_large         & python & 35.79 & 37.14 & 1.0x \\
+    dense\_large         & cpp    & 20.85 & 22.40 & 1.7x \\
+    dense\_large         & cuda   & 1.66 & 1.71 & \textbf{21.5x} \\
+    \bottomrule
+  \end{tabular}
+  \end{table}
+  {\small \texttt{breakeven} — переходный режим, в котором CUDA уже начинает обгонять python, но ещё не становится лучшим backend'ом}
+\end{frame}
+
+% Слайд 17: CUDA — реальные данные
 \begin{frame}
   \frametitle{CUDA-ускорение DyGFormer на реальных данных}
   \begin{columns}
