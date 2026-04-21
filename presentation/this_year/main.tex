@@ -298,12 +298,16 @@
     \end{itemize}
     \column{0.47\textwidth}
     \footnotesize
-    \textbf{Temporal GNN-архитектуры}
+    \textbf{Простые Temporal GNN-архитектуры}
     \begin{itemize}
       \item \textbf{EAGLE}: time-aware + structure-aware модули с T-PPR; линейная сложность
       \item \textbf{GraphMixer}: только MLP + mean-pooling, без механизма внимания
-      \item \textbf{GLFormer}: адаптивная агрегация токенов с расширяющимся рецептивным полем; $O(N\sum K_l)$
-      \item \textbf{DyGFormer}: трансформер над историческими последовательностями первых соседей; NCoE-кодирование
+    \end{itemize}
+    \vspace{0.2cm}
+    \textbf{Трансформер-подобные Temporal GNN-архитектуры}
+    \begin{itemize}
+      \item \textbf{GLFormer}: адаптивная агрегация токенов с расширяющимся рецептивным полем;
+      \item \textbf{DyGFormer}: трансформер над историческими последовательностями первых соседей;
     \end{itemize}
   \end{columns}
 \end{frame}
@@ -686,7 +690,6 @@ result = launch_experiment(spec)
     \column{0.5\textwidth}
     \textbf{Исследовательские направления}
     \begin{itemize}
-      \item Объяснить, почему структурные методы превосходят GNN: анализ структуры графа, роль «хабов», повторные взаимодействия
       \item Проверить гипотезу на других финансовых датасетах (Ethereum, банковские данные)
       \item Разработать гибридные модели, объединяющие структурный сигнал с темпоральными паттернами
       \item Исследование более сложных стратегий семплирования (HIST, IND негативы)
