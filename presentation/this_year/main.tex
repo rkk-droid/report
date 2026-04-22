@@ -117,7 +117,7 @@
 
 % Слайд 3: Актуальность работы
 \section{Актуальность работы}
-\begin{frame}
+\begin{frame}[fragile]
   \frametitle{Актуальность работы}
   \begin{itemize}
     \item \textbf{Масштаб данных}: реальные финансовые сети превосходят стандартные бенчмарки на \textbf{1–4 порядка} по числу узлов и рёбер
@@ -181,7 +181,7 @@
   \frametitle{Датасет: ORBITAAL (Bitcoin, 2020)}
   \begin{columns}
     \column{0.5\textwidth}
-    \footnotesize
+    \scriptsize
     \textbf{ORBITAAL} — полный временной граф биткоин-транзакций (2009–2021)
     \begin{itemize}
       \item Используем 10\% рёбер периода \textbf{2020-06-01 — 2020-08-31}
@@ -375,34 +375,54 @@
 \section{Архитектура библиотеки}
 \begin{frame}
   \frametitle{Архитектура библиотеки \texttt{payment-graph-forecasting}}
-  \begin{columns}
-    \column{0.52\textwidth}
-    \small
-    \textbf{11 пакетных областей API:}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.61\textwidth}
+    {\scriptsize\bfseries Структура пакета}
+    \vspace{0.03cm}
+    \setlength{\fboxsep}{4pt}
+    \noindent\colorbox{gray!8}{%
+      \parbox[t][0.64\textheight][t]{\dimexpr\linewidth-2\fboxsep\relax}{%
+        \raggedright
+        \vspace*{2pt}
+        {\fontsize{8.0}{7.5}\selectfont\ttfamily
+        \renewcommand{\arraystretch}{1.05}
+        \begin{tabular}{@{}l@{}}
+        payment\_graph\_forecasting/ \\
+        |-- config/ \\
+        |-- data/ \\
+        |-- models/ \\
+        | |-- registry.py \\
+        | `-- eagle.py, graphmixer.py, ... \\
+        |-- experiments/ \\
+        | `-- launcher.py, runners/ \\
+        |-- training/ \\
+        |-- evaluation/ \\
+        |-- sampling/ \\
+        |-- infra/ \\
+        |-- analysis/ \\
+        |-- cuda.py \\
+        `-- graph\_metrics.py \\
+        \end{tabular}}
+      }%
+    }
+    \column{0.35\textwidth}
+    \scriptsize
+    \textbf{Как читать дерево}
     \begin{itemize}
-      \item \texttt{config} — типизированные YAML-конфигурации (\texttt{ExperimentSpec})
-      \item \texttt{models} — адаптеры и реестр 7 семейств моделей
-      \item \texttt{training} / \texttt{evaluation} — единый цикл обучения и оценки
-      \item \texttt{data} — stream graph в parquet-формате
-      \item \texttt{sampling} — стратегии негативного семплирования
-      \item \texttt{cuda} — GPU-ускоренные примитивы
-      \item \texttt{graph\_metrics}, \texttt{analysis}, \texttt{experiments}, \texttt{infra}
+      \setlength{\itemsep}{1pt}
+      \item \textbf{Предметная область}: \texttt{data/}, \texttt{models/}, \texttt{sampling/}\\
+      данные, адаптеры моделей и семплирование
+      \item \textbf{Контур эксперимента}: \texttt{experiments/}, \texttt{training/}, \texttt{evaluation/}\\
+      запуск, обучение и ranking-метрики
+      \item \textbf{Системный слой}: \texttt{infra/}, \texttt{cuda.py}, \texttt{graph\_metrics.py}\\
+      runtime-утилиты и ускоренные примитивы
     \end{itemize}
-    \column{0.45\textwidth}
-    \small
-    \textbf{Пользовательские сценарии:}
-    \begin{enumerate}
-      \item \textbf{YAML-запуск}: декларативное описание эксперимента
-      \item \textbf{Python API}: прямое использование из кода
-      \item \textbf{ИИ-ассистент}: встроенный агентный сценарий
-    \end{enumerate}
-    \vspace{0.3cm}
-    \textbf{Количественные характеристики:}
+    \vspace{0.06cm}
+    \textbf{Точки входа}
     \begin{itemize}
-      \item 7 моделей в реестре
-      \item 6 источников данных
-      \item 3 backend'а: Python / C++ / CUDA
-      \item \textbf{Всё покрыто тестами}
+      \setlength{\itemsep}{1pt}
+      \item \textbf{YAML}: \texttt{config} $\rightarrow$ \texttt{experiments.launcher}
+      \item \textbf{Python API}: \texttt{models} + \texttt{training} + \texttt{evaluation}
     \end{itemize}
   \end{columns}
 \end{frame}
