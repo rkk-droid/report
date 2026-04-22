@@ -233,7 +233,7 @@
 \begin{frame}
   \frametitle{Анализ существующих библиотек}
   \begin{itemize}
-    \item \textbf{PyTorch Geometric Temporal} — ориентирован на дискретные временные снимки; ограниченная поддержка темпоральности «из коробки»
+    \item \textbf{PyTorch Geometric Temporal} — ориентирован на снапшоты; ограниченная поддержка темпоральности «из коробки»
     \item \textbf{PyG (базовый)} — низкоуровневые примитивы \texttt{TemporalData}; пользователь собирает пайплайн самостоятельно
     \item \textbf{DGL} — мощный фреймворк общего назначения; без специализированной поддержки непрерывного времени
     \item \textbf{TGL (Amazon)} и \textbf{STM-Graph} — промышленные решения для сверхкрупных графов; плохо обобщаются за пределы своей ниши
@@ -642,9 +642,9 @@ result = launch_experiment(spec)
 \section{Результаты экспериментов}
 \begin{frame}
   \frametitle{Результаты сравнительного эксперимента}
-  \begin{columns}
+  \begin{columns}[T]
     \column{0.5\textwidth}
-    \begin{table}
+    \centering
     \small
     \begin{tabular}{lcccc}
       \toprule
@@ -665,7 +665,6 @@ result = launch_experiment(spec)
       GLFormer & 0.09 & 0.07 & 0.11 & 0.20 \\
       \bottomrule
     \end{tabular}
-    \end{table}
     \column{0.47\textwidth}
     \textbf{Ключевые наблюдения}
     \begin{itemize}
@@ -681,9 +680,9 @@ result = launch_experiment(spec)
 % Слайд 18: Аблационное исследование CN+MLP
 \begin{frame}
   \frametitle{Аблационное исследование CN+MLP}
-  \begin{columns}
+  \begin{columns}[T]
     \column{0.55\textwidth}
-    \begin{table}
+    \centering
     \small
     \begin{tabular}{llcc}
       \toprule
@@ -700,8 +699,8 @@ result = launch_experiment(spec)
       E3 & 7 признаков, BPR loss & 0.308 & 0.230 \\
       \bottomrule
     \end{tabular}
-    \end{table}
-    \column{0.42\textwidth}
+    \column{0.03\textwidth}
+    \column{0.39\textwidth}
     \textbf{Выводы аблационного исследования}
     \begin{itemize}
       \item \textbf{cn\_uu — единственный значимый признак}: E1 (1 признак) vs. E2 (3 признака) — добавление ухудшает MRR $0.603 \to 0.572$
